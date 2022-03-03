@@ -1,0 +1,9 @@
+Flask-SQLAlchemy
+SQLAlchemy-Utils
+SQLAlchemy~=1.4.29
+flask-praetorian
+Authlib~=0.15.5
+Flask~=2.0.2
+flask-restx
+marshmallow-sqlalchemy
+requests
