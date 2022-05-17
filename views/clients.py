@@ -1,42 +1,90 @@
 import flask_praetorian
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from flask_restx import abort, Resource, Namespace
 from sqlalchemy import text
-
-from model import Client, db
+from model import Client, db, User, Bets
 from schema import ClientSchema
 
 api_client = Namespace("Clients", "Clients management")
 
+""" 
+Client endopoints 
+"""
 
-@api_client.route("/<client_id>/bets")
+
+def getClientIDFromToken(request):
+    authHeader = request.headers.get('Authorization')
+    token = authHeader.replace('Bearer ', '')
+    guard = flask_praetorian.Praetorian()
+    guard.init_app(current_app, User)
+    user = guard.extract_jwt_token(token)
+    result = Client.query.filter(Client.user_id == user['id'])
+    clientID = result[0].id
+    return clientID
+
+
+@api_client.route("/claim")
 class ClientController(Resource):
     @flask_praetorian.auth_required
-    def get(self, client_id):
+    def patch(self):
+        betID = int(request.json.get("idBet"))
+        bet = Bets.query.get_or_404(betID)
+        bet.claimed = True
+
+        idClient = getClientIDFromToken(request)
+        client = Client.query.get_or_404(idClient)
+        reward = float(request.json.get("reward"))
+        client.cash = round(client.cash + reward, 2)
+
+        db.session.commit()
+        return jsonify({'new_cash': client.cash})
+
+
+@api_client.route("/my_balance")
+class ClientController(Resource):
+    @flask_praetorian.auth_required
+    def get(self):
+        idClient = getClientIDFromToken(request)
+        client = Client.query.get_or_404(idClient)
+        return jsonify({'cash': client.cash, 'image': client.image})
+
+
+@api_client.route("/profile")
+class ClientController(Resource):
+    @flask_praetorian.auth_required
+    def get(self):
+        idClient = getClientIDFromToken(request)
+        client = Client.query.get_or_404(idClient)
+        clientData = ClientSchema().dump(client)
+
+        wonBets = Bets.query.filter(Bets.client_id == idClient, Bets.win.is_(True)).count()
+        clientData['wonBets'] = wonBets
+
         statement = text("""
-                            select bets.id,
-                                   bets.bet_position,
-                                   rh.final_position,
-                                   bets.win,
-                                   bets.bet_amount,
-                                   rh.total_bet,
-                                   bets.benefit_ratio,
-                                   bets.payment_amount
-                            from bets
-                            join client c on c.id = bets.client_id
-                            join runs_horses rh on bets.run_horse_id = rh.id
-                            where client_id = :clientID
-                        """)
-        result = db.session.execute(statement, {"clientID": client_id})
-        return jsonify([{'id': r['id'],
-                         'bet_position': r['bet_position'],
-                         'final_position': r['final_position'],
-                         'win': r['win'],
-                         'bet_amount': r['bet_amount'],
-                         'total_run_horse_bets': r['total_bet'],
-                         'benefit_ratio': r['benefit_ratio'],
-                         'payment_amount': r['payment_amount']
-                         } for r in result])
+                        select 
+                        (
+                            select coalesce(sum(b.payment_amount), 0)
+                            from bets b 
+                            where b.client_id == :clientID and b.win == TRUE and b.claimed == TRUE 
+                        )
+                        -
+                        (
+                            select coalesce(sum(b.bet_amount), 0)
+                            from bets b 
+                            where b.client_id == :clientID
+                        )
+                    """)
+
+        moneyEarned = db.session.execute(statement, {"clientID": idClient}).first()[0]
+        moneyEarned = 0 if moneyEarned is None else round(moneyEarned, 2)
+        clientData['moneyEarned'] = moneyEarned
+
+        return clientData
+
+
+""" 
+Admin endopoints 
+"""
 
 
 @api_client.route("/<client_id>")

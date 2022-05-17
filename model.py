@@ -1,7 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.sql import func
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy_utils import database_exists
 
 db = SQLAlchemy()
@@ -58,22 +57,30 @@ def seed_db(app, guard):
                  owner="Lucia Gomez", tlf="687459821", email="wtgwergf@svsd.com")
         ]
         horses = [
-            Horse(name="caballo1", race="Appaloosa", hair_cape="appaloosa",
+            Horse(name="caballo1", breed="Appaloosa", hair_cape="appaloosa", age=8,
                   win_ratio=30.4, stud=studs[0]),
-            Horse(name="caballo2", race="Pura Sangre Inglés", hair_cape="negra",
+            Horse(name="caballo2", breed="Pura Sangre Inglés", hair_cape="negra", age=7,
                   win_ratio=50.4, stud=studs[1]),
-            Horse(name="caballo3", race="Pura Sangre Inglés", hair_cape="castaño",
+            Horse(name="caballo3", breed="Pura Sangre Inglés", hair_cape="castaño", age=10,
                   win_ratio=27.4, stud=studs[2])
         ]
         runs = [
-            Run(date="25/05/2022", time="13.00"),
-            Run(date="27/05/2022", time="17.00", horses=[horses[1], horses[2]]),
-            Run(date="28/05/2022", time="14.00", horses=[horses[0]])
+            Run(tag="A-03", date="25/05/2022", time="13.00"),
+            Run(tag="B-15", date="27/05/2022", time="17.00", horses=[horses[1], horses[2]]),
+            Run(tag="B-10", date="27/05/2022", time="10.00", horses=[horses[0], horses[1]]),
+            Run(tag="C-25", date="28/05/2022", time="14.00", horses=[horses[0]]),
+            Run(tag="D-12", date="28/05/2022", time="18.00", horses=[horses[0], horses[2]])
         ]
         clients = [
-            Client(cif="58744698C", full_name="Juan Vázquez", user=users[0]),
-            Client(cif="33799746I", full_name="Paco Perez", user=users[1]),
-            Client(cif="77418462L", full_name="Maria García", user=users[2])
+            Client(cif="58744698C", cash=500, user=users[0]),
+            Client(cif="33799746I", cash=400, user=users[1]),
+            Client(cif="77418462L", cash=300, user=users[2])
+        ]
+        bets = [
+            Bets(client_id=1, run_horse_id=1, payment_amount=30.7, bet_position=2, bet_amount=10.5, win=True),
+            Bets(client_id=1, run_horse_id=2, bet_position=1, bet_amount=20,),
+            Bets(client_id=1, run_horse_id=4, payment_amount=50, bet_position=2, bet_amount=30.5, win=False),
+            Bets(client_id=1, run_horse_id=5, payment_amount=10.5, bet_position=1, bet_amount=5, win=True)
         ]
 
         for user in users:
@@ -86,6 +93,8 @@ def seed_db(app, guard):
             db.session.add(run)
         for client in clients:
             db.session.add(client)
+        for bet in bets:
+            db.session.add(bet)
 
         db.session.commit()
 
@@ -124,10 +133,10 @@ class User(db.Model):
 
     client = db.relationship("Client", cascade="all, delete-orphan", backref="user")
     roles = db.relationship('Role', secondary=roles_users, back_populates='users', uselist=True)
-    is_active = db.Column(db.Boolean, default=True, server_default="true")
+    is_active = db.Column(db.Boolean, default=True)
 
     created_on = db.Column(db.DateTime(timezone=True), server_default=func.now())
-    updated_on = db.Column(db.DateTime(timezone=True), onupdate=func.now())
+    updated_on = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # this enables this entity as user entity in praetorian
     @property
@@ -168,9 +177,6 @@ class Role(db.Model):
     name = db.Column(db.String(80), unique=False, nullable=False)
     users = db.relationship('User', secondary=roles_users, back_populates='roles', uselist=True)
 
-    created_on = db.Column(db.DateTime(timezone=True), server_default=func.now())
-    updated_on = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-
     def __repr__(self):
         return f"<Role {self.name}>"
 
@@ -208,10 +214,11 @@ class Horse(db.Model):
     __tablename__ = 'horse'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    race = db.Column(db.String(80), nullable=False)
+    breed = db.Column(db.String(80), nullable=False)
+    age = db.Column(db.Integer, nullable=False)
     hair_cape = db.Column(db.String(80))
     win_ratio = db.Column(db.Float)
-    image = db.Column(db.String(255), default="not-found.png")
+    image = db.Column(db.String(255), default="default_horse.jpg")
 
     stud_id = db.Column(db.Integer, db.ForeignKey('stud.id'))
     runs = db.relationship('Run', secondary="runs_horses", back_populates="horses")
@@ -231,6 +238,7 @@ class Run(db.Model):
     """
     __tablename__ = 'run'
     id = db.Column(db.Integer, primary_key=True)
+    tag = db.Column(db.String(80), unique=True, nullable=False)
     date = db.Column(db.String(80), nullable=False)
     time = db.Column(db.String(80), nullable=False)
 
@@ -273,12 +281,12 @@ class Client(db.Model):
     """
     __tablename__ = 'client'
     id = db.Column(db.Integer, primary_key=True)
-    cif = db.Column(db.String(80), nullable=False)
-    full_name = db.Column(db.String(80), nullable=False)
+    cif = db.Column(db.String(80), nullable=False, unique=True)
+    cifImage = db.Column(db.String(255), nullable=False, default="default_user.jpg")
     cash = db.Column(db.Float, default=0)
+    image = db.Column(db.String(255), default="default_user.jpg")
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
     runs_horses = db.relationship('Runs_Horses', secondary='bets', back_populates='clients', uselist=True)
 
     created_on = db.Column(db.DateTime(timezone=True), server_default=func.now())
@@ -296,11 +304,12 @@ class Bets(db.Model):
     """
     __tablename__ = 'bets'
     id = db.Column(db.Integer, primary_key=True)
-    bet_position = db.Column(db.Integer, nullable=False, default=0)
-    bet_amount = db.Column(db.Float, nullable=False, default=0)
-    win = db.Column(db.Boolean, default=False)
+    bet_position = db.Column(db.Integer, nullable=False)
+    bet_amount = db.Column(db.Float, nullable=False)
+    win = db.Column(db.Boolean)
     benefit_ratio = db.Column(db.Float, default=0)
     payment_amount = db.Column(db.Float, default=0)
+    claimed = db.Column(db.Boolean, default=False)
 
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
     run_horse_id = db.Column(db.Integer, db.ForeignKey('runs_horses.id'), nullable=False)
@@ -308,4 +317,3 @@ class Bets(db.Model):
 
     created_on = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_on = db.Column(db.DateTime(timezone=True), onupdate=func.now())
-

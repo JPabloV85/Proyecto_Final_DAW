@@ -7,3 +7,4 @@ Flask~=2.0.2
 flask-restx
 marshmallow-sqlalchemy
 requests
+flask-cors

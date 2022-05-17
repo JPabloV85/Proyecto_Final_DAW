@@ -1,6 +1,7 @@
 from authlib.integrations.flask_client import OAuth
 from flask import Flask, request, jsonify, url_for
 import flask_praetorian
+from flask_cors import CORS
 from model import init_db, User
 from views import blueprint as api
 
@@ -9,11 +10,15 @@ def create_app(config_file='config.py'):
     guard = flask_praetorian.Praetorian()
     app = Flask(__name__)
     app.config.from_pyfile(config_file)
-
-    # instantiate oauth object
-    oauth = OAuth(app)
+    app_cors_config = {
+        "origins": ["*"],
+        "methods": ["OPTIONS", "GET", "POST", "PATCH", "PUT"],
+        "allow_headers": ["Authorization", "Content-type"]
+    }
+    CORS(app, resources={"/*": app_cors_config})
 
     # oauth init
+    oauth = OAuth(app)
     oauth.register(
         name='github',
         access_token_url='https://github.com/login/oauth/access_token',

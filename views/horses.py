@@ -1,10 +1,38 @@
 import flask_praetorian
 from flask import request
 from flask_restx import abort, Resource, Namespace
-from model import Horse, db
+from model import Horse, db, Runs_Horses
 from schema import HorseSchema
 
 api_horse = Namespace("Horses", "Horses management")
+
+""" 
+Client endopoints 
+"""
+
+
+@api_horse.route("/detail/<horse_id>")
+class HorseController(Resource):
+    @flask_praetorian.auth_required
+    def get(self, horse_id):
+        horse = Horse.query.get_or_404(horse_id)
+        horseData = HorseSchema().dump(horse)
+
+        timesFirst = Runs_Horses.query.filter(Runs_Horses.horse_id == horse_id, Runs_Horses.final_position == 1).count()
+        timesSecond = Runs_Horses.query.filter(Runs_Horses.horse_id == horse_id,
+                                               Runs_Horses.final_position == 2).count()
+        timesThird = Runs_Horses.query.filter(Runs_Horses.horse_id == horse_id, Runs_Horses.final_position == 3).count()
+
+        horseData['timesFirst'] = timesFirst
+        horseData['timesSecond'] = timesSecond
+        horseData['timesThird'] = timesThird
+
+        return horseData
+
+
+""" 
+Admin endopoints 
+"""
 
 
 @api_horse.route("/<horse_id>")

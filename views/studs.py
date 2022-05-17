@@ -6,6 +6,10 @@ from schema import StudSchema
 
 api_stud = Namespace("Studs", "Studs management")
 
+""" 
+Admin endopoints 
+"""
+
 
 @api_stud.route("/<stud_id>")
 class StudController(Resource):

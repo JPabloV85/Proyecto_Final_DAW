@@ -2,11 +2,14 @@ import flask_praetorian
 from flask import request, jsonify
 from flask_restx import abort, Resource, Namespace
 from sqlalchemy import text
-
 from model import Run, db
 from schema import RunSchema
 
 api_run = Namespace("Runs", "Runs management")
+
+""" 
+Client endopoints 
+"""
 
 
 @api_run.route("/available")
@@ -14,15 +17,21 @@ class RunListController(Resource):
     @flask_praetorian.auth_required
     def get(self):
         statement = text("""
-                            select * from (select run.id, run.date, run.time, count(rh.horse_id) as horses
-                                from run
-                                join runs_horses rh on run.id = rh.run_id
-                                group by rh.run_id
-                                )
+                            select * from (select run.id, run.tag, run.date, run.time, count(rh.horse_id) as horses
+                                            from run
+                                            join runs_horses rh on run.id = rh.run_id
+                                            group by rh.run_id
+                                            order by run.date, run.time
+                                            )
                             where horses > 1
                         """)
         result = db.session.execute(statement)
-        return jsonify([{'id': r['id'], 'date': r['date'], 'time': r['time']} for r in result])
+        return jsonify([{'id': r['id'], 'race_tag': r['tag'], 'date': r['date'], 'time': r['time']} for r in result])
+
+
+""" 
+Admin endopoints 
+"""
 
 
 @api_run.route("/<run_id>")

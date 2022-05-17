@@ -72,7 +72,7 @@ class ClientSchema(SQLAlchemyAutoSchema):
         sqla_session = db.session
         ordered = True
 
-    user = fields.Nested(UserSchema(exclude=["client"]), load_only=True)
+    user = fields.Nested(UserSchema(exclude=["client"]))
 
     runs_horses = fields.Nested(Runs_HorsesSchema, exclude=["clients"], many=True)
 
@@ -83,3 +83,6 @@ class BetsSchema(SQLAlchemyAutoSchema):
         load_instance = True
         sqla_session = db.session
         ordered = True
+
+    client = fields.Nested(ClientSchema(exclude=["user", "runs_horses"]), load_only=True)
+    run_horse = fields.Nested(Runs_HorsesSchema, exclude=["clients"], load_only=True)
