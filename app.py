@@ -1,7 +1,8 @@
 from authlib.integrations.flask_client import OAuth
-from flask import Flask, request, jsonify, url_for
+from flask import Flask, request, jsonify, url_for, render_template, redirect
 import flask_praetorian
 from flask_cors import CORS
+from forms import AdminLoginForm
 from model import init_db, User
 from views import blueprint as api
 
@@ -38,11 +39,30 @@ def create_app(config_file='config.py'):
     # register blueprint
     app.register_blueprint(api, url_prefix="/api/")
 
-    @app.route('/')
-    def hello_world():  # put application's code here
-        return 'Hello World!'
+    # admin authentication system
+    @app.route('/', methods=['GET', 'POST'])
+    def admin_login():
+        """
+            Process login requests
 
-    # authentication system
+            Get login credentials from form_data
+            Parameters: username and password
+        """
+        form = AdminLoginForm()
+        if form.validate_on_submit():
+            username = form.username.data
+            password = form.password.data
+            user = guard.authenticate(username, password)
+            user_roles = [role.name for role in user.roles]
+            token = guard.encode_jwt_token(user)
+
+            if user is not None and "admin" in user_roles:
+                return redirect(url_for("Winning Horse.doc", token=token))
+            form.username.errors.append("Error: Introduce ADMIN credentials to login")
+
+        return render_template("admin_login.html", form=form)
+
+    # client authentication system
     @app.route('/login', methods=['POST'])
     def login():
         """

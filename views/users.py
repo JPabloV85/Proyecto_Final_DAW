@@ -11,11 +11,8 @@ from views.clients import getClientIDFromToken
 
 api_user = Namespace("Users", "Users management")
 
-""" 
-Client endopoints 
-"""
 
-
+# Client endopoints
 @api_user.route("/register")
 class ClientListController(Resource):
     def post(self):
@@ -87,11 +84,7 @@ class ClientListController(Resource):
             return error, 500
 
 
-""" 
-Admin endopoints 
-"""
-
-
+# Admin endopoints
 @api_user.route("/<user_id>")
 class UserController(Resource):
     @flask_praetorian.auth_required

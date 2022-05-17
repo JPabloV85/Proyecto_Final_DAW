@@ -8,3 +8,4 @@ flask-restx
 marshmallow-sqlalchemy
 requests
 flask-cors
+Flask-WTF

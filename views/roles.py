@@ -6,11 +6,8 @@ from schema import RoleSchema
 
 api_role = Namespace("Roles", "Roles management")
 
-""" 
-Admin endopoints 
-"""
 
-
+# Admin endopoints
 @api_role.route("/<role_id>")
 class RoleController(Resource):
     @flask_praetorian.auth_required

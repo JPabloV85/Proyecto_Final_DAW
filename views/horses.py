@@ -6,11 +6,8 @@ from schema import HorseSchema
 
 api_horse = Namespace("Horses", "Horses management")
 
-""" 
-Client endopoints 
-"""
 
-
+# Client endopoints
 @api_horse.route("/detail/<horse_id>")
 class HorseController(Resource):
     @flask_praetorian.auth_required
@@ -30,11 +27,7 @@ class HorseController(Resource):
         return horseData
 
 
-""" 
-Admin endopoints 
-"""
-
-
+# Admin endopoints
 @api_horse.route("/<horse_id>")
 class HorseController(Resource):
     @flask_praetorian.auth_required

@@ -7,11 +7,8 @@ from schema import ClientSchema
 
 api_client = Namespace("Clients", "Clients management")
 
-""" 
-Client endopoints 
-"""
 
-
+# Client endopoints
 def getClientIDFromToken(request):
     authHeader = request.headers.get('Authorization')
     token = authHeader.replace('Bearer ', '')
@@ -82,11 +79,7 @@ class ClientController(Resource):
         return clientData
 
 
-""" 
-Admin endopoints 
-"""
-
-
+# Admin endopoints
 @api_client.route("/<client_id>")
 class ClientController(Resource):
     @flask_praetorian.auth_required

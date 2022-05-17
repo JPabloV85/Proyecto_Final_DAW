@@ -14,7 +14,7 @@ from .bets import api_bet
 
 # one blueprint (Flask) for all the resources
 blueprint = Blueprint('Winning Horse', __name__)
-api = Api(blueprint, title="Winning Horse", version="1.0", description="Manage horse racing bets.", doc="/docs")
+api = Api(blueprint, title="Winning Horse", version="1.0", description="Manage horse racing bets.", doc="/admin")
 flask_praetorian.PraetorianError.register_error_handler_with_flask_restx(api_client)
 
 # every resource in a namespace (RestX)

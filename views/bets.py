@@ -8,11 +8,8 @@ from views.clients import getClientIDFromToken
 
 api_bet = Namespace("Bets", "Bets management")
 
-""" 
-Client endopoints 
-"""
 
-
+# Client endopoints
 @api_bet.route("/my_bets")
 class BetController(Resource):
     @flask_praetorian.auth_required
@@ -83,11 +80,7 @@ class BetController(Resource):
         return jsonify({'new_cash': client.cash})
 
 
-""" 
-Admin endopoints 
-"""
-
-
+# Admin endopoints
 @api_bet.route("/<bet_id>")
 class BetController(Resource):
     @flask_praetorian.auth_required

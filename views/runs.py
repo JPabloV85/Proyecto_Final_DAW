@@ -7,11 +7,8 @@ from schema import RunSchema
 
 api_run = Namespace("Runs", "Runs management")
 
-""" 
-Client endopoints 
-"""
 
-
+# Client endopoints
 @api_run.route("/available")
 class RunListController(Resource):
     @flask_praetorian.auth_required
@@ -29,11 +26,7 @@ class RunListController(Resource):
         return jsonify([{'id': r['id'], 'race_tag': r['tag'], 'date': r['date'], 'time': r['time']} for r in result])
 
 
-""" 
-Admin endopoints 
-"""
-
-
+# Admin endopoints
 @api_run.route("/<run_id>")
 class RegionController(Resource):
     @flask_praetorian.auth_required

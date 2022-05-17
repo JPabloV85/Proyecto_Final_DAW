@@ -8,19 +8,14 @@ from views.clients import getClientIDFromToken
 
 api_run_horse = Namespace("Runs_Horses", "Runs_Horses management")
 
-""" 
-Client endopoints 
-"""
 
-
+# Client endopoints
 @api_run_horse.route("/getHorses")
 class Runs_HorsesController(Resource):
     @flask_praetorian.auth_required
     def post(self):
-        """
-        Busco runs_horses en función del id de la carrera para ver todos los caballos inscritos en la misma
-        Recojo la información de los caballos
-        """
+        # Busco runs_horses en función del id de la carrera para ver todos los caballos inscritos en la misma
+        # Recojo la información de los caballos
         run_id = int(request.json.get("race_id"))
         statement = text("""
                             select rh.id, horse_id, h.name, h.win_ratio
@@ -35,10 +30,8 @@ class Runs_HorsesController(Resource):
                                 'win_ratio': r['win_ratio']
                                 } for r in result])
 
-        """
-        Busco apuestas del cliente sobre los distintos caballos de cada run, es decir, sobre cada run_horse.
-        Por cada caballo recogido anteriormente introduzco TRUE si ya hay una apuesta hecha, y FALSE si no la hay
-        """
+        # Busco apuestas del cliente sobre los distintos caballos de cada run, es decir, sobre cada run_horse.
+        # Por cada caballo recogido anteriormente introduzco TRUE si ya hay una apuesta hecha, y FALSE si no la hay
         idClient = getClientIDFromToken(request)
         new_horses_response = []
         for run_horse in runs_horses.json:
@@ -52,11 +45,7 @@ class Runs_HorsesController(Resource):
         return new_horses_response
 
 
-""" 
-Admin endopoints 
-"""
-
-
+# Admin endopoints
 @api_run_horse.route("/<runs_horses_id>")
 class Runs_HorsesController(Resource):
     @flask_praetorian.auth_required
