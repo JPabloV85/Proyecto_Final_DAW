@@ -31,7 +31,7 @@ class StudSchema(SQLAlchemyAutoSchema):
         sqla_session = db.session
         ordered = True
 
-    horses = fields.Nested(lambda: HorseSchema(exclude=["stud"]), many=True)
+    horses = fields.Nested(lambda: HorseSchema(exclude=["stud"]), many=True, load_only=True)
 
 
 class HorseSchema(SQLAlchemyAutoSchema):

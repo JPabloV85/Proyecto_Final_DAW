@@ -49,12 +49,9 @@ def seed_db(app, guard):
                  roles=[roles[0]])
         ]
         studs = [
-            Stud(name="yeguada1", address="direccion1", location="Cadiz",
-                 owner="Antonio Perez", tlf="956020304", email="sfsofi@svsd.com"),
-            Stud(name="yeguada2", address="direccion2", location="Sevilla",
-                 owner="Juana Lopez", tlf="984532745", email="sfsohtygfi@svsd.com"),
-            Stud(name="yeguada3", address="direccion3", location="Madrid",
-                 owner="Lucia Gomez", tlf="687459821", email="wtgwergf@svsd.com")
+            Stud(name="yeguada1", location="Cadiz", email="sfsofi@svsd.com"),
+            Stud(name="yeguada2", location="Sevilla", email="sfsohtygfi@svsd.com"),
+            Stud(name="yeguada3", location="Madrid", email="wtgwergf@svsd.com")
         ]
         horses = [
             Horse(name="caballo1", breed="Appaloosa", hair_cape="appaloosa", age=8,
@@ -190,16 +187,13 @@ class Stud(db.Model):
     __tablename__ = 'stud'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    address = db.Column(db.String(80))
     location = db.Column(db.String(80))
-    owner = db.Column(db.String(80), nullable=False)
-    tlf = db.Column(db.String(80))
-    email = db.Column(db.String(80))
+    email = db.Column(db.String(80), unique=True)
 
     horses = db.relationship("Horse", cascade="all, delete-orphan", backref="stud", uselist=True)
 
     created_on = db.Column(db.DateTime(timezone=True), server_default=func.now())
-    updated_on = db.Column(db.DateTime(timezone=True), onupdate=func.now())
+    updated_on = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     def __repr__(self):
         return f"<Stud: {self.name}>"
