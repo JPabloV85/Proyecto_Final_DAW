@@ -1,3 +1,4 @@
+import marshmallow
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
 from model import db, User, Role, Client, Stud, Horse, Run, Runs_Horses, Bets
 
@@ -66,14 +67,16 @@ class Runs_HorsesSchema(SQLAlchemyAutoSchema):
 
 
 class ClientSchema(SQLAlchemyAutoSchema):
+    user = fields.Nested(UserSchema(only=['username', 'email', 'hashed_password'], exclude=["client"]))
+    runs_horses = fields.Nested(Runs_HorsesSchema, exclude=["clients"], many=True, load_only=True)
+    number_of_bets = marshmallow.fields.Function(lambda obj: len(obj.runs_horses))
+
     class Meta:
         model = Client
+        fields = ["id", "user", "cif", "cash", "image", "runs_horses", "number_of_bets"]
         load_instance = True
         sqla_session = db.session
         ordered = True
-
-    user = fields.Nested(UserSchema(exclude=["client"]))
-    runs_horses = fields.Nested(Runs_HorsesSchema, exclude=["clients"], many=True)
 
 
 class BetsSchema(SQLAlchemyAutoSchema):

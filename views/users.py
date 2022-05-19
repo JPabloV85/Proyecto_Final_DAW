@@ -28,9 +28,6 @@ parserPUT.add_argument('Add Role (name)', type=str, location='form', nullable=Fa
 parserPUT.add_argument('Delete Role (name)', type=str, location='form', nullable=False)
 
 
-# Form file uploads
-# parser.add_argument('image', type=FileStorage, location='files', required=True)
-
 # Client endopoints
 @api_user.route("/register", doc=False)
 class ClientListController(Resource):
@@ -165,8 +162,8 @@ class UserListController(Resource):
     @flask_praetorian.roles_required("admin")
     @api_user.expect(parserPOST, validate=True)
     @api_user.doc(description='*Try it out* and introduce some values in fields below; then, hit *Execute* button to '
-                              'create a new user in your database. In *Code* section you will see your new '
-                              'user (*Response body*) and a code for a succeded or failed operation.')
+                              'create a new user in your database. In *Code* section you will see your new user ('
+                              '*Response body*) and a code for a succeded or failed operation.')
     def post(self):
         """Creates a new user from entry data."""
         guard = flask_praetorian.Praetorian()

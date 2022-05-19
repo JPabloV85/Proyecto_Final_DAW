@@ -11,9 +11,6 @@ parser = api_role.parser()
 parser.add_argument('Name', type=str, location='form', required=True, nullable=False)
 
 
-# Form file uploads
-# parser.add_argument('image', type=FileStorage, location='files', required=True)
-
 # Admin endopoints
 @api_role.route("/<int:role_id>")
 class RoleController(Resource):

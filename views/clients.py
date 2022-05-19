@@ -1,14 +1,39 @@
+import os
+import uuid
 import flask_praetorian
 from flask import request, jsonify, current_app
 from flask_restx import abort, Resource, Namespace
+from flask_restx.inputs import email
 from sqlalchemy import text
-from model import Client, db, User, Bets
-from schema import ClientSchema
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
+from model import Client, db, User, Bets, Role
+from schema import ClientSchema, UserSchema
 
 api_client = Namespace("Clients", "Clients management")
 
+# SWAGGER POST FORM FIELDS
+parserPOST = api_client.parser()
+parserPOST.add_argument('Username', type=str, location='form', required=True, nullable=False)
+parserPOST.add_argument('CIF', type=str, location='form', required=True, nullable=False)
+parserPOST.add_argument('E-mail', type=email(), location='form', required=True, nullable=False)
+parserPOST.add_argument('Password', type=str, location='form', required=True, nullable=False)
+parserPOST.add_argument('Image', type=FileStorage, location='files')
 
-# Client endopoints
+# SWAGGER PUT FORM FIELDS
+parserPUT = api_client.parser()
+parserPUT.add_argument('Username', type=str, location='form', nullable=False)
+parserPUT.add_argument('CIF', type=str, location='form', nullable=False)
+parserPUT.add_argument('E-mail', type=email(), location='form', nullable=False)
+parserPUT.add_argument('Password', type=str, location='form', nullable=False)
+parserPUT.add_argument('Cash', type=float, location='form', nullable=False)
+parserPUT.add_argument('Image', type=FileStorage, location='files')
+
+
+# Form file uploads
+# parser.add_argument('image', type=FileStorage, location='files')
+
+
 def getClientIDFromToken(request):
     authHeader = request.headers.get('Authorization')
     token = authHeader.replace('Bearer ', '')
@@ -20,7 +45,8 @@ def getClientIDFromToken(request):
     return clientID
 
 
-@api_client.route("/claim")
+# Client endopoints
+@api_client.route("/claim", doc=False)
 class ClientController(Resource):
     @flask_praetorian.auth_required
     def patch(self):
@@ -37,7 +63,7 @@ class ClientController(Resource):
         return jsonify({'new_cash': client.cash})
 
 
-@api_client.route("/my_balance")
+@api_client.route("/my_balance", doc=False)
 class ClientController(Resource):
     @flask_praetorian.auth_required
     def get(self):
@@ -46,7 +72,7 @@ class ClientController(Resource):
         return jsonify({'cash': client.cash, 'image': client.image})
 
 
-@api_client.route("/profile")
+@api_client.route("/profile", doc=False)
 class ClientController(Resource):
     @flask_praetorian.auth_required
     def get(self):
@@ -80,38 +106,108 @@ class ClientController(Resource):
 
 
 # Admin endopoints
-@api_client.route("/<client_id>")
+@api_client.route("/<int:client_id>")
 class ClientController(Resource):
     @flask_praetorian.auth_required
     def get(self, client_id):
+        """Shows a detailed client from given id."""
         client = Client.query.get_or_404(client_id)
-        return ClientSchema().dump(client)
+        return ClientSchema().dump(client), 200
 
     @flask_praetorian.roles_required("admin")
+    @api_client.doc(description='*Try it out* and introduce a client id you want to delete; then, hit *Execute* '
+                                'button to delete the desired client from your database. In *Code* section you will '
+                                'see the deleted client (*Response body*) and a code for a succeded or failed '
+                                'operation.')
     def delete(self, client_id):
+        """Deletes a client from given id."""
         client = Client.query.get_or_404(client_id)
+        clientData = ClientSchema().dump(client)
+        user = User.query.filter(User.id == client.user_id).first()
         db.session.delete(client)
+        db.session.delete(user)
         db.session.commit()
-        return f"Deleted client {client_id}", 204
+        return clientData, 200
 
     @flask_praetorian.roles_required("admin")
+    @api_client.expect(parserPUT, validate=True)
+    @api_client.doc(description='*Try it out* and introduce the client data and client id you want to modify; then, '
+                                'hit *Execute* button to apply your changes. In *Code* section you will see the '
+                                'modified client (*Code*) and a code for a succeded or failed operation.')
     def put(self, client_id):
-        new_client = ClientSchema().load(request.json)
-        if str(new_client.id) != client_id:
-            abort(400, "id mismatch")
+        """Updates a client with entry data and given id."""
+        guard = flask_praetorian.Praetorian()
+        guard.init_app(current_app, User)
+
+        client = Client.query.get_or_404(client_id)
+        user = User.query.filter(User.id == client.user_id).first()
+
+        if request.form.get("Username"):
+            user.username = request.form.get("Username")
+        if request.form.get("E-mail"):
+            user.email = request.form.get("E-mail")
+        if request.form.get("Password"):
+            user.hashed_password = guard.hash_password(request.form.get("Password"))
+        if request.form.get("CIF"):
+            client.cif = request.form.get("CIF")
+        if request.form.get("Cash"):
+            client.cash = request.form.get("Cash")
+        if 'Image' in request.files:
+            newImage = request.files['Image']
+            folder = current_app.root_path + "/static/images/"
+            if client.image != "default_user.jpg":
+                os.unlink(os.path.join(folder + client.image))
+            filename = str(uuid.uuid4().hex) + "_" + secure_filename(newImage.filename)
+            newImage.save(folder + filename)
+            client.image = filename
+
         db.session.commit()
-        return ClientSchema().dump(new_client)
+        return ClientSchema().dump(client), 200
 
 
 @api_client.route("/")
 class ClientListController(Resource):
     @flask_praetorian.auth_required
+    @api_client.doc(description='*Try it out* and hit *Execute* button. In *Code* section you will see a list of '
+                                'clients stored in your database (*Response body*) and a code for a succeded or failed '
+                                'operation.')
     def get(self):
-        return ClientSchema(many=True).dump(Client.query.all())
+        """Shows a detailed list of clients."""
+        return ClientSchema(many=True).dump(Client.query.all()), 200
 
     @flask_praetorian.roles_required("admin")
+    @api_client.expect(parserPOST, validate=True)
+    @api_client.doc(description='*Try it out* and introduce some values in fields below; then, hit *Execute* button to '
+                                'create a new client in your database. In *Code* section you will see your new client '
+                                '(*Response body*) and a code for a succeded or failed operation.')
     def post(self):
-        client = ClientSchema().load(request.json)
+        """Creates a new client from entry data."""
+        guard = flask_praetorian.Praetorian()
+        guard.init_app(current_app, User)
+
+        userRequest = {
+            "username": request.form.get("Username"),
+            "email": request.form.get("E-mail"),
+            "hashed_password": guard.hash_password(request.form.get("Password"))
+        }
+        user = UserSchema().load(userRequest)
+        db.session.add(user)
+        role = Role.query.filter(Role.name == "client").first()
+        user.roles.append(role)
+
+        clientRequest = {
+            "cif": request.form.get("CIF")
+        }
+        client = ClientSchema().load(clientRequest)
         db.session.add(client)
+        client.user_id = user.id
+
+        if 'Image' in request.files:
+            image = request.files['Image']
+            filename = str(uuid.uuid4().hex) + "_" + secure_filename(image.filename)
+            folder = current_app.root_path + "/static/images/"
+            image.save(folder + filename)
+            client.image = filename
+
         db.session.commit()
-        return ClientSchema().dump(client), 201
+        return ClientSchema().dump(client), 200

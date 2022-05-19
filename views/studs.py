@@ -19,9 +19,6 @@ parserPUT.add_argument('Name', type=str, location='form', nullable=False)
 parserPUT.add_argument('Location', type=str, location='form', nullable=False)
 parserPUT.add_argument('E-mail', type=email(), location='form', nullable=False)
 
-# Form file uploads
-# parser.add_argument('image', type=FileStorage, location='files', required=True)
-
 
 # Admin endopoints
 @api_stud.route("/<int:stud_id>")
