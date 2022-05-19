@@ -21,7 +21,7 @@ class RoleSchema(SQLAlchemyAutoSchema):
         sqla_session = db.session
         ordered = True
 
-    users = fields.Nested(UserSchema(exclude=["roles"]), many=True)
+    users = fields.Nested(UserSchema(exclude=["roles"]), many=True, load_only=True)
 
 
 class StudSchema(SQLAlchemyAutoSchema):

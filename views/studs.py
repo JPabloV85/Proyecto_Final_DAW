@@ -14,7 +14,7 @@ parser.add_argument('name', type=str, location='form', required=True, nullable=F
 parser.add_argument('location', type=str, location='form', required=True, nullable=False)
 parser.add_argument('email', type=email(), location='form', required=True, nullable=False)
 
-# From file uploads
+# Form file uploads
 # parser.add_argument('image', type=FileStorage, location='files', required=True)
 
 
@@ -23,7 +23,7 @@ parser.add_argument('email', type=email(), location='form', required=True, nulla
 class StudController(Resource):
     @flask_praetorian.auth_required
     def get(self, stud_id):
-        """Returns a single stud from given id."""
+        """Shows a detailed stud from given id."""
         stud = Stud.query.get_or_404(stud_id)
         return StudSchema().dump(stud), 200
 
@@ -62,7 +62,7 @@ class StudListController(Resource):
                               'studs stored in your database (*Response body*) and a code for a succeded or failed '
                               'operation.')
     def get(self):
-        """Returns a list of studs."""
+        """Shows a detailed list of studs."""
         return StudSchema(many=True).dump(Stud.query.all()), 200
 
     @flask_praetorian.roles_required("admin")
