@@ -9,3 +9,5 @@ marshmallow-sqlalchemy
 requests
 flask-cors
 Flask-WTF
+Werkzeug~=2.0.3
+WTForms~=3.0.1

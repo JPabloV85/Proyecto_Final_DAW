@@ -171,7 +171,7 @@ class Role(db.Model):
     """
     __tablename__ = 'role'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=False, nullable=False)
+    name = db.Column(db.String(80), unique=True, nullable=False)
     users = db.relationship('User', secondary=roles_users, back_populates='roles', uselist=True)
 
     def __repr__(self):

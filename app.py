@@ -54,7 +54,7 @@ def create_app(config_file='config.py'):
             password = form.password.data
             user = guard.authenticate(username, password)
             user_roles = [role.name for role in user.roles]
-            token = guard.encode_jwt_token(user)
+            token = "Bearer" + guard.encode_jwt_token(user)
 
             if user is not None and "admin" in user_roles:
                 return redirect(url_for("Winning Horse.doc", token=token))

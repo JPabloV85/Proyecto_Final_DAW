@@ -8,7 +8,7 @@ api_role = Namespace("Roles", "Roles management")
 
 # SWAGGER FORM FIELDS
 parser = api_role.parser()
-parser.add_argument('name', type=str, location='form', required=True, nullable=False)
+parser.add_argument('Name', type=str, location='form', required=True, nullable=False)
 
 
 # Form file uploads
@@ -42,7 +42,7 @@ class RoleController(Resource):
     def put(self, role_id):
         """Updates a role with entry data and given id."""
         role = Role.query.get_or_404(role_id)
-        role.name = request.form.get("name")
+        role.name = request.form.get("Name")
         db.session.commit()
         return RoleSchema().dump(role), 200
 
@@ -65,7 +65,7 @@ class RoleListController(Resource):
     def post(self):
         """Creates a new role from entry data."""
         roleRequest = {
-            "name": request.form.get("name")
+            "name": request.form.get("Name")
         }
         role = RoleSchema().load(roleRequest)
         db.session.add(role)

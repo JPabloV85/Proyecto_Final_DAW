@@ -1,37 +1,37 @@
-# from marshmallow import fields
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
 from model import db, User, Role, Client, Stud, Horse, Run, Runs_Horses, Bets
 
 
 class UserSchema(SQLAlchemyAutoSchema):
+    roles = fields.Nested(lambda: RoleSchema(only=["name"], exclude=["users"]), many=True)
+    client = fields.Nested(lambda: ClientSchema(exclude=["user"]), load_only=True)
+
     class Meta:
         model = User
+        fields = ["id", "username", "email", "hashed_password", "created_on", "roles", "client"]
         load_instance = True
         sqla_session = db.session
         ordered = True
 
-    roles = fields.Nested(lambda: RoleSchema(exclude=["users"]), many=True)
-    client = fields.Nested(lambda: ClientSchema(exclude=["user"]), load_only=True)
-
 
 class RoleSchema(SQLAlchemyAutoSchema):
+    users = fields.Nested(UserSchema(exclude=["roles"]), many=True, load_only=True)
+
     class Meta:
         model = Role
         load_instance = True
         sqla_session = db.session
         ordered = True
 
-    users = fields.Nested(UserSchema(exclude=["roles"]), many=True, load_only=True)
-
 
 class StudSchema(SQLAlchemyAutoSchema):
+    horses = fields.Nested(lambda: HorseSchema(exclude=["stud"]), many=True, load_only=True)
+
     class Meta:
         model = Stud
         load_instance = True
         sqla_session = db.session
         ordered = True
-
-    horses = fields.Nested(lambda: HorseSchema(exclude=["stud"]), many=True, load_only=True)
 
 
 class HorseSchema(SQLAlchemyAutoSchema):
@@ -73,7 +73,6 @@ class ClientSchema(SQLAlchemyAutoSchema):
         ordered = True
 
     user = fields.Nested(UserSchema(exclude=["client"]))
-
     runs_horses = fields.Nested(Runs_HorsesSchema, exclude=["clients"], many=True)
 
 

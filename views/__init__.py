@@ -19,8 +19,7 @@ authorizations = {
         'type': 'apiKey',
         'in': 'header',
         'name': 'Authorization',
-        'value': 'Bearer',
-        'description': 'Introduce your token value preceded by the word "Bearer": Bearer *your_token*'
+        'description': 'Introduce your token value.'
     },
 }
 api = Api(blueprint,
