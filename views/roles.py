@@ -1,4 +1,4 @@
-import flask_praetorian
+from functools import wraps
 from flask import request
 from flask_restx import Resource, Namespace
 from model import Role, db
@@ -11,16 +11,32 @@ parser = api_role.parser()
 parser.add_argument('Name', type=str, location='form', required=True, nullable=False)
 
 
+# custom decorator
+def apiKey_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        apiKey = None
+        if 'Authorization' in request.headers:
+            apiKey = request.headers['Authorization']
+        if not apiKey:
+            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
+        if apiKey != 'myapikey':
+            return 'Your ApiKey is wrong!', 401
+        return f(*args, **kwargs)
+
+    return decorated
+
+
 # Admin endopoints
 @api_role.route("/<int:role_id>")
 class RoleController(Resource):
-    @flask_praetorian.auth_required
+    @apiKey_required
     def get(self, role_id):
         """Shows a detailed role from given id."""
         role = Role.query.get_or_404(role_id)
         return RoleSchema().dump(role), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_role.doc(description='*Try it out* and introduce a role id you want to delete; then, hit *Execute* button to '
                               'delete the desired role from your database. In *Code* section you will see the '
                               'deleted role (*Response body*) and a code for a succeded or failed operation.')
@@ -31,7 +47,7 @@ class RoleController(Resource):
         db.session.commit()
         return RoleSchema().dump(role), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_role.expect(parser, validate=True)
     @api_role.doc(description='*Try it out* and introduce the role data and role id you want to modify; then, '
                               'hit *Execute* button to apply your changes. In *Code* section you will see the '
@@ -46,7 +62,7 @@ class RoleController(Resource):
 
 @api_role.route("/")
 class RoleListController(Resource):
-    @flask_praetorian.auth_required
+    @apiKey_required
     @api_role.doc(description='*Try it out* and hit *Execute* button. In *Code* section you will see a list of '
                               'roles stored in your database (*Response body*) and a code for a succeded or failed '
                               'operation.')
@@ -54,7 +70,7 @@ class RoleListController(Resource):
         """Shows a detailed list of roles."""
         return RoleSchema(many=True).dump(Role.query.all()), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_role.expect(parser, validate=True)
     @api_role.doc(description='*Try it out* and introduce some values in fields below; then, hit *Execute* button to '
                               'create a new role in your database. In *Code* section you will see your new '

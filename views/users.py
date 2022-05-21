@@ -1,5 +1,6 @@
 import os.path
 import uuid
+from functools import wraps
 import flask_praetorian
 from flask import request, current_app
 from flask_restx import Resource, Namespace
@@ -26,6 +27,22 @@ parserPUT.add_argument('E-mail', type=email(), location='form', nullable=False)
 parserPUT.add_argument('Password', type=str, location='form', nullable=False)
 parserPUT.add_argument('Add Role (name)', type=str, location='form', nullable=False)
 parserPUT.add_argument('Delete Role (name)', type=str, location='form', nullable=False)
+
+
+# custom decorator
+def apiKey_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        apiKey = None
+        if 'Authorization' in request.headers:
+            apiKey = request.headers['Authorization']
+        if not apiKey:
+            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
+        if apiKey != 'myapikey':
+            return 'Your ApiKey is wrong!', 401
+        return f(*args, **kwargs)
+
+    return decorated
 
 
 # Client endopoints
@@ -103,13 +120,13 @@ class ClientListController(Resource):
 # Admin endopoints
 @api_user.route("/<int:user_id>")
 class UserController(Resource):
-    @flask_praetorian.auth_required
+    @apiKey_required
     def get(self, user_id):
         """Shows a detailed user from given id."""
         user = User.query.get_or_404(user_id)
         return UserSchema().dump(user), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_user.doc(description='*Try it out* and introduce a user id you want to delete; then, hit *Execute* button to '
                               'delete the desired user from your database. In *Code* section you will see the '
                               'deleted user (*Response body*) and a code for a succeded or failed operation.')
@@ -120,7 +137,7 @@ class UserController(Resource):
         db.session.commit()
         return UserSchema().dump(user), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_user.expect(parserPUT, validate=True)
     @api_user.doc(description='*Try it out* and introduce the user data and user id you want to modify; then, '
                               'hit *Execute* button to apply your changes. In *Code* section you will see the '
@@ -152,14 +169,14 @@ class UserController(Resource):
 
 @api_user.route("/")
 class UserListController(Resource):
-    @flask_praetorian.auth_required
+    @apiKey_required
     @api_user.doc(description='*Try it out* and hit *Execute* button. In *Code* section you will see a list of users '
                               'stored in your database (*Response body*) and a code for a succeded or failed operation.')
     def get(self):
         """Shows a detailed list of users."""
         return UserSchema(many=True).dump(User.query.all()), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_user.expect(parserPOST, validate=True)
     @api_user.doc(description='*Try it out* and introduce some values in fields below; then, hit *Execute* button to '
                               'create a new user in your database. In *Code* section you will see your new user ('

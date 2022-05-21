@@ -39,9 +39,9 @@ def create_app(config_file='config.py'):
     # register blueprint
     app.register_blueprint(api, url_prefix="/api/")
 
-    # admin authentication system
+    # admin authentication login
     @app.route('/', methods=['GET', 'POST'])
-    def admin_login():
+    def admin():
         """
             Process login requests
 
@@ -54,15 +54,14 @@ def create_app(config_file='config.py'):
             password = form.password.data
             user = guard.authenticate(username, password)
             user_roles = [role.name for role in user.roles]
-            token = "Bearer" + guard.encode_jwt_token(user)
 
             if user is not None and "admin" in user_roles:
-                return redirect(url_for("Winning Horse.doc", token=token))
+                return redirect(url_for("Winning Horse.doc"))
             form.username.errors.append("Error: Introduce ADMIN credentials to login")
 
         return render_template("admin_login.html", form=form)
 
-    # client authentication system
+    # client authentication login
     @app.route('/login', methods=['POST'])
     def login():
         """
@@ -87,11 +86,8 @@ def create_app(config_file='config.py'):
         Creates Authlib client for OAuth with gitHub
         """
 
-        # create auth client for gitHub
         github = oauth.create_client('github')
-        # _external=True because gitHub redirects to this url
         redirect_uri = url_for('authorize', _external=True)
-        # send authorization request
         return github.authorize_redirect(redirect_uri)
 
     @app.route('/authorize')
@@ -102,24 +98,14 @@ def create_app(config_file='config.py'):
         Redirect Uri for gitHub OAuth authorization
         """
 
-        # get token for gitHub API access
         token = oauth.github.authorize_access_token()
-        # /user gitHub API entrypoint ()
         resp = oauth.github.get('user', token=token)
         resp.raise_for_status()
-        # get json from API response
         profile = resp.json()
 
-        # bad code: updating password on fly
-        # user_github = User.query.filter_by(username=profile.get("login")).first()
-        # user_github.hashed_password = guard.hash_password(token.get("access_token"))
-        # db.session.commit()
-        # db.session.close()
-
-        # get user using gitHub username
         user = User.lookup(profile.get("login"))
-        # get JWT from praetorian
         ret = {"access_token": guard.encode_jwt_token(user)}
+
         # return JWT
         return jsonify(ret), 200
 

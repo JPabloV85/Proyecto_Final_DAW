@@ -15,17 +15,17 @@ from .bets import api_bet
 # one blueprint (Flask) for all the resources
 blueprint = Blueprint('Winning Horse', __name__)
 authorizations = {
-    'Bearer Auth': {
+    'Authentication': {
         'type': 'apiKey',
         'in': 'header',
         'name': 'Authorization',
-        'description': 'Introduce your token value.'
+        'description': 'Introduce your ApiKey.'
     },
 }
 api = Api(blueprint,
           title="Winning Horse",
           version="1.0",
-          security='Bearer Auth',
+          security='Authentication',
           authorizations=authorizations,
           description="Manage horse racing bets.",
           doc="/admin")

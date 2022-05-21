@@ -1,4 +1,4 @@
-import flask_praetorian
+from functools import wraps
 from flask import request
 from flask_restx import Resource, Namespace
 from flask_restx.inputs import email
@@ -20,16 +20,32 @@ parserPUT.add_argument('Location', type=str, location='form', nullable=False)
 parserPUT.add_argument('E-mail', type=email(), location='form', nullable=False)
 
 
+# custom decorator
+def apiKey_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        apiKey = None
+        if 'Authorization' in request.headers:
+            apiKey = request.headers['Authorization']
+        if not apiKey:
+            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
+        if apiKey != 'myapikey':
+            return 'Your ApiKey is wrong!', 401
+        return f(*args, **kwargs)
+
+    return decorated
+
+
 # Admin endopoints
 @api_stud.route("/<int:stud_id>")
 class StudController(Resource):
-    @flask_praetorian.auth_required
+    @apiKey_required
     def get(self, stud_id):
         """Shows a detailed stud from given id."""
         stud = Stud.query.get_or_404(stud_id)
         return StudSchema().dump(stud), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_stud.doc(description='*Try it out* and introduce a stud id you want to delete; then, hit *Execute* button to '
                               'delete the desired stud from your database. In *Code* section you will see the '
                               'deleted stud (*Response body*) and a code for a succeded or failed operation.')
@@ -40,7 +56,7 @@ class StudController(Resource):
         db.session.commit()
         return StudSchema().dump(stud), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_stud.expect(parserPUT, validate=True)
     @api_stud.doc(description='*Try it out* and introduce the stud data and stud id you want to modify; then, '
                               'hit *Execute* button to apply your changes. In *Code* section you will see the '
@@ -62,15 +78,15 @@ class StudController(Resource):
 
 @api_stud.route("/")
 class StudListController(Resource):
-    @flask_praetorian.auth_required
+    @apiKey_required
     @api_stud.doc(description='*Try it out* and hit *Execute* button. In *Code* section you will see a list of '
                               'studs stored in your database (*Response body*) and a code for a succeded or failed '
                               'operation.')
-    def get(self):
+    def get(self, headers=None):
         """Shows a detailed list of studs."""
         return StudSchema(many=True).dump(Stud.query.all()), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_stud.expect(parserPOST, validate=True)
     @api_stud.doc(description='*Try it out* and introduce some values in fields below; then, hit *Execute* button to '
                               'create a new entry in your database. In *Code* section you will see your new '

@@ -1,8 +1,9 @@
 import os
 import uuid
+from functools import wraps
 import flask_praetorian
 from flask import request, jsonify, current_app
-from flask_restx import abort, Resource, Namespace
+from flask_restx import Resource, Namespace
 from flask_restx.inputs import email
 from sqlalchemy import text
 from werkzeug.datastructures import FileStorage
@@ -30,8 +31,20 @@ parserPUT.add_argument('Cash', type=float, location='form', nullable=False)
 parserPUT.add_argument('Image', type=FileStorage, location='files')
 
 
-# Form file uploads
-# parser.add_argument('image', type=FileStorage, location='files')
+# custom decorator
+def apiKey_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        apiKey = None
+        if 'Authorization' in request.headers:
+            apiKey = request.headers['Authorization']
+        if not apiKey:
+            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
+        if apiKey != 'myapikey':
+            return 'Your ApiKey is wrong!', 401
+        return f(*args, **kwargs)
+
+    return decorated
 
 
 def getClientIDFromToken(request):
@@ -108,13 +121,13 @@ class ClientController(Resource):
 # Admin endopoints
 @api_client.route("/<int:client_id>")
 class ClientController(Resource):
-    @flask_praetorian.auth_required
+    @apiKey_required
     def get(self, client_id):
         """Shows a detailed client from given id."""
         client = Client.query.get_or_404(client_id)
         return ClientSchema().dump(client), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_client.doc(description='*Try it out* and introduce a client id you want to delete; then, hit *Execute* '
                                 'button to delete the desired client from your database. In *Code* section you will '
                                 'see the deleted client (*Response body*) and a code for a succeded or failed '
@@ -129,7 +142,7 @@ class ClientController(Resource):
         db.session.commit()
         return clientData, 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_client.expect(parserPUT, validate=True)
     @api_client.doc(description='*Try it out* and introduce the client data and client id you want to modify; then, '
                                 'hit *Execute* button to apply your changes. In *Code* section you will see the '
@@ -167,7 +180,7 @@ class ClientController(Resource):
 
 @api_client.route("/")
 class ClientListController(Resource):
-    @flask_praetorian.auth_required
+    @apiKey_required
     @api_client.doc(description='*Try it out* and hit *Execute* button. In *Code* section you will see a list of '
                                 'clients stored in your database (*Response body*) and a code for a succeded or failed '
                                 'operation.')
@@ -175,7 +188,7 @@ class ClientListController(Resource):
         """Shows a detailed list of clients."""
         return ClientSchema(many=True).dump(Client.query.all()), 200
 
-    @flask_praetorian.roles_required("admin")
+    @apiKey_required
     @api_client.expect(parserPOST, validate=True)
     @api_client.doc(description='*Try it out* and introduce some values in fields below; then, hit *Execute* button to '
                                 'create a new client in your database. In *Code* section you will see your new client '
