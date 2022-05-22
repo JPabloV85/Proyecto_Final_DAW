@@ -3,10 +3,10 @@ import uuid
 from functools import wraps
 import flask_praetorian
 from flask import request, current_app
-from flask_restx import Resource, Namespace
-from flask_restx.inputs import email
+from flask_restx import Resource, Namespace, inputs
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.utils import secure_filename
+from config import API_KEY
 from model import User, db, Role, Client
 from schema import UserSchema, ClientSchema
 from views.clients import getClientIDFromToken
@@ -16,17 +16,17 @@ api_user = Namespace("Users", "Users management")
 # SWAGGER POST FORM FIELDS
 parserPOST = api_user.parser()
 parserPOST.add_argument('Username', type=str, location='form', required=True, nullable=False)
-parserPOST.add_argument('E-mail', type=email(), location='form', required=True, nullable=False)
+parserPOST.add_argument('E-mail', type=inputs.email(), location='form', required=True, nullable=False)
 parserPOST.add_argument('Password', type=str, location='form', required=True, nullable=False)
-parserPOST.add_argument('Add Role (name)', type=str, location='form', required=True, nullable=False, default='admin')
+parserPOST.add_argument('Add Role', type=str, location='form', required=True, nullable=False, choices=['admin', 'client'])
 
 # SWAGGER PUT FORM FIELDS
 parserPUT = api_user.parser()
 parserPUT.add_argument('Username', type=str, location='form', nullable=False)
-parserPUT.add_argument('E-mail', type=email(), location='form', nullable=False)
+parserPUT.add_argument('E-mail', type=inputs.email(), location='form', nullable=False)
 parserPUT.add_argument('Password', type=str, location='form', nullable=False)
-parserPUT.add_argument('Add Role (name)', type=str, location='form', nullable=False)
-parserPUT.add_argument('Delete Role (name)', type=str, location='form', nullable=False)
+parserPUT.add_argument('Add Role', type=str, location='form', nullable=False, choices=['admin', 'client'])
+parserPUT.add_argument('Delete Role', type=str, location='form', nullable=False, choices=['admin', 'client'])
 
 
 # custom decorator
@@ -38,7 +38,7 @@ def apiKey_required(f):
             apiKey = request.headers['Authorization']
         if not apiKey:
             return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != 'myapikey':
+        if apiKey != API_KEY:
             return 'Your ApiKey is wrong!', 401
         return f(*args, **kwargs)
 
@@ -143,7 +143,7 @@ class UserController(Resource):
                               'hit *Execute* button to apply your changes. In *Code* section you will see the '
                               'modified user (*Code*) and a code for a succeded or failed operation.')
     def put(self, user_id):
-        """Updates an user with entry data and given id."""
+        """Updates a user with entry data and given id."""
         guard = flask_praetorian.Praetorian()
         guard.init_app(current_app, User)
 
@@ -155,11 +155,11 @@ class UserController(Resource):
             user.email = request.form.get("E-mail")
         if request.form.get("Password"):
             user.hashed_password = guard.hash_password(request.form.get("Password"))
-        if request.form.get("Add Role (name)"):
-            role = Role.query.filter(Role.name == request.form.get("Add Role (name)")).first()
+        if request.form.get("Add Role"):
+            role = Role.query.filter(Role.name == request.form.get("Add Role")).first()
             user.roles.append(role)
-        if request.form.get("Delete Role (name)"):
-            role = Role.query.filter(Role.name == request.form.get("Delete Role (name)")).first()
+        if request.form.get("Delete Role"):
+            role = Role.query.filter(Role.name == request.form.get("Delete Role")).first()
             if role in user.roles:
                 user.roles.remove(role)
 
@@ -193,7 +193,7 @@ class UserListController(Resource):
         }
         user = UserSchema().load(userRequest)
         db.session.add(user)
-        role = Role.query.filter(Role.name == request.form.get("Add Role (name)")).first()
+        role = Role.query.filter(Role.name == request.form.get("Add Role")).first()
         user.roles.append(role)
 
         db.session.commit()

@@ -1,16 +1,40 @@
+from functools import wraps
 import flask_praetorian
 from flask import request, jsonify
-from flask_restx import abort, Resource, Namespace
+from flask_restx import Resource, Namespace
 from sqlalchemy import text
-from model import Runs_Horses, db, Bets
-from schema import Runs_HorsesSchema
+from config import API_KEY
+from model import Runs_Horses, db, Bet, Run, Horse
+from schema import RunSchema
 from views.clients import getClientIDFromToken
 
 api_run_horse = Namespace("Runs_Horses", "Runs_Horses management")
 
+# SWAGGER PUT FORM FIELDS
+parserPUT = api_run_horse.parser()
+parserPUT.add_argument('Run Tag', type=str, location='form', required=True)
+parserPUT.add_argument('Horse(equineID)', type=str, location='form', required=True)
+parserPUT.add_argument('Position', type=int, location='form', required=True, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+
+# custom decorator
+def apiKey_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        apiKey = None
+        if 'Authorization' in request.headers:
+            apiKey = request.headers['Authorization']
+        if not apiKey:
+            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
+        if apiKey != API_KEY:
+            return 'Your ApiKey is wrong!', 401
+        return f(*args, **kwargs)
+
+    return decorated
+
 
 # Client endopoints
-@api_run_horse.route("/getHorses")
+@api_run_horse.route("/getHorses", doc=False)
 class Runs_HorsesController(Resource):
     @flask_praetorian.auth_required
     def post(self):
@@ -35,7 +59,7 @@ class Runs_HorsesController(Resource):
         idClient = getClientIDFromToken(request)
         new_horses_response = []
         for run_horse in runs_horses.json:
-            bet = Bets.query.filter(Bets.client_id == idClient, Bets.run_horse_id == run_horse.get('id')).first()
+            bet = Bet.query.filter(Bet.client_id == idClient, Bet.run_horse_id == run_horse.get('id')).first()
             if bet:
                 run_horse['bet_done'] = True
             else:
@@ -46,38 +70,57 @@ class Runs_HorsesController(Resource):
 
 
 # Admin endopoints
-@api_run_horse.route("/<runs_horses_id>")
+@api_run_horse.route("/<Runtag>")
 class Runs_HorsesController(Resource):
-    @flask_praetorian.auth_required
-    def get(self, run_horse_id):
-        run_horse = Runs_Horses.query.get_or_404(run_horse_id)
-        return Runs_HorsesSchema().dump(run_horse)
-
-    @flask_praetorian.roles_required("admin")
-    def delete(self, run_horse_id):
-        run_horse = Runs_Horses.query.get_or_404(run_horse_id)
-        db.session.delete(run_horse)
-        db.session.commit()
-        return f"Deleted run_horse {run_horse_id}", 204
-
-    @flask_praetorian.roles_required("admin")
-    def put(self, run_horse_id):
-        new_run_horse = Runs_HorsesSchema().load(request.json)
-        if str(new_run_horse.id) != run_horse_id:
-            abort(400, "id mismatch")
-        db.session.commit()
-        return Runs_HorsesSchema().dump(new_run_horse)
+    @apiKey_required
+    def get(self, Runtag):
+        """Shows a detailed run with registered horses along with their positions."""
+        run = RunSchema().dump(Run.query.filter(Run.tag == Runtag).first())
+        statement = text("""
+                        select rh.horse_id, rh.final_position 
+                        from runs_horses rh
+                        where rh.run_id == :runId
+                        order by rh.horse_id asc
+                    """)
+        result = db.session.execute(statement, {"runId": run.get('id')})
+        for horse, r in zip(run.get("horses"), result):
+            if r['final_position'] is None:
+                horse["position"] = "-"
+            else:
+                horse["position"] = r['final_position']
+        return run, 200
 
 
 @api_run_horse.route("/")
 class Runs_HorsesListController(Resource):
-    @flask_praetorian.auth_required
+    @apiKey_required
     def get(self):
-        return Runs_HorsesSchema(many=True).dump(Runs_Horses.query.all())
+        """Shows a detailed list of runs with registered horses along with their positions."""
+        runs = RunSchema(many=True).dump(Run.query.all())
+        for run in runs:
+            statement = text("""
+                select rh.horse_id, rh.final_position 
+                from runs_horses rh
+                where rh.run_id == :runId
+                order by rh.horse_id asc
+            """)
+            result = db.session.execute(statement, {"runId": run.get('id')})
+            for horse, r in zip(run.get("horses"), result):
+                if r['final_position'] is None:
+                    horse["position"] = "-"
+                else:
+                    horse["position"] = r['final_position']
+        return runs, 200
 
-    @flask_praetorian.roles_required("admin")
-    def post(self):
-        run_horse = Runs_HorsesSchema().load(request.json)
-        db.session.add(run_horse)
+    @apiKey_required
+    @api_run_horse.expect(parserPUT, validate=True)
+    def put(self):
+        """Update horses final position for a given run tag"""
+        run = Run.query.filter(Run.tag == request.form.get("Run Tag")).first()
+        horse = Horse.query.filter(Horse.equineID == request.form.get("Horse(equineID)")).first()
+
+        run_horse = Runs_Horses.query.filter(Runs_Horses.run_id == run.id, Runs_Horses.horse_id == horse.id).first()
+        run_horse.final_position = request.form.get("Position")
+
         db.session.commit()
-        return Runs_HorsesSchema().dump(run_horse), 201
+        return "Horse " + horse.equineID + " final position set to: " + str(run_horse.final_position), 200

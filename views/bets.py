@@ -2,8 +2,8 @@ import flask_praetorian
 from flask import request, jsonify
 from flask_restx import abort, Resource, Namespace
 from sqlalchemy import text
-from model import Bets, db, Runs_Horses, Client
-from schema import BetsSchema
+from model import Bet, db, Runs_Horses, Client
+from schema import BetSchema
 from views.clients import getClientIDFromToken
 
 api_bet = Namespace("Bets", "Bets management")
@@ -16,27 +16,27 @@ class BetController(Resource):
     def get(self):
         idClient = getClientIDFromToken(request)
         statement = text("""
-                    select bets.id,
-                           bets.bet_position,
+                    select bet.id,
+                           bet.bet_position,
                            rh.final_position,
-                           bets.win,
-                           bets.bet_amount,
+                           bet.win,
+                           bet.bet_amount,
                            rh.total_bet,
-                           bets.benefit_ratio,
-                           bets.payment_amount,
-                           bets.claimed,
-                           bets.created_on,
+                           bet.benefit_ratio,
+                           bet.payment_amount,
+                           bet.claimed,
+                           bet.created_on,
                            r.tag,
                            h.name,
                            rh.run_id,
                            rh.horse_id
-                    from bets
-                    join client c on c.id = bets.client_id
-                    join runs_horses rh on bets.run_horse_id = rh.id
+                    from bet
+                    join client c on c.id = bet.client_id
+                    join runs_horses rh on bet.run_horse_id = rh.id
                     join run r on rh.run_id = r.id
                     join horse h on rh.horse_id = h.id
                     where client_id = :clientID
-                    order by bets.created_on desc
+                    order by bet.created_on desc
                 """)
         result = db.session.execute(statement, {"clientID": idClient})
         return jsonify([{'id': r['id'],
@@ -67,7 +67,7 @@ class BetController(Resource):
 
         del request.json["race_id"]
         del request.json["horse_id"]
-        bet = BetsSchema().load(request.json)
+        bet = BetSchema().load(request.json)
         setattr(bet, "client_id", idClient)
         setattr(bet, "run_horse_id", idRunHorse)
         db.session.add(bet)
@@ -85,34 +85,34 @@ class BetController(Resource):
 class BetController(Resource):
     @flask_praetorian.auth_required
     def get(self, bet_id):
-        bet = Bets.query.get_or_404(bet_id)
-        return BetsSchema().dump(bet)
+        bet = Bet.query.get_or_404(bet_id)
+        return BetSchema().dump(bet)
 
     @flask_praetorian.roles_required("admin")
     def delete(self, bet_id):
-        bet = Bets.query.get_or_404(bet_id)
+        bet = Bet.query.get_or_404(bet_id)
         db.session.delete(bet)
         db.session.commit()
         return f"Deleted bet {bet_id}", 204
 
     @flask_praetorian.roles_required("admin")
     def put(self, bet_id):
-        new_bet = BetsSchema().load(request.json)
+        new_bet = BetSchema().load(request.json)
         if str(new_bet.id) != bet_id:
             abort(400, "id mismatch")
         db.session.commit()
-        return BetsSchema().dump(new_bet)
+        return BetSchema().dump(new_bet)
 
 
 @api_bet.route("/")
 class RegionListController(Resource):
     @flask_praetorian.auth_required
     def get(self):
-        return BetsSchema(many=True).dump(Bets.query.all())
+        return BetSchema(many=True).dump(Bet.query.all())
 
     @flask_praetorian.roles_required("admin")
     def post(self):
-        bet = BetsSchema().load(request.json)
+        bet = BetSchema().load(request.json)
         db.session.add(bet)
         db.session.commit()
-        return BetsSchema().dump(bet), 201
+        return BetSchema().dump(bet), 201

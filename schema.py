@@ -1,6 +1,6 @@
 import marshmallow
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
-from model import db, User, Role, Client, Stud, Horse, Run, Runs_Horses, Bets
+from model import db, User, Role, Client, Stud, Horse, Run, Runs_Horses, Bet
 
 
 class UserSchema(SQLAlchemyAutoSchema):
@@ -36,34 +36,38 @@ class StudSchema(SQLAlchemyAutoSchema):
 
 
 class HorseSchema(SQLAlchemyAutoSchema):
+    stud = fields.Nested(StudSchema(only=["name", "location", "email"], exclude=["horses"]))
+    runs = fields.Nested(lambda: RunSchema(exclude=["horses"]), load_only=True, many=True)
+    runs_completed = marshmallow.fields.Function(lambda obj: len(obj.runs))
+
     class Meta:
         model = Horse
+        fields = ["id", "equineID", "name", "age", "breed", "runs", "runs_completed", "image", "stud"]
         load_instance = True
         sqla_session = db.session
         ordered = True
-
-    stud = fields.Nested(StudSchema(exclude=["horses"]))
-    runs = fields.Nested(lambda: RunSchema(exclude=["horses"]), many=True)
 
 
 class RunSchema(SQLAlchemyAutoSchema):
+    horses = fields.Nested(HorseSchema, only=["name", "equineID"], exclude=["runs", "stud"], many=True)
+
     class Meta:
         model = Run
+        fields = ["id", "tag", "date", "time", "horses"]
         load_instance = True
         sqla_session = db.session
         ordered = True
-
-    horses = fields.Nested(HorseSchema, exclude=["runs"], many=True)
 
 
 class Runs_HorsesSchema(SQLAlchemyAutoSchema):
+    clients = fields.Nested(lambda: ClientSchema(exclude=["user", "runs_horses"]), load_only=True, many=True)
+
     class Meta:
         model = Runs_Horses
+        fields = ["final_position", "total_bet", "clients"]
         load_instance = True
         sqla_session = db.session
         ordered = True
-
-    clients = fields.Nested(lambda: ClientSchema(exclude=["user", "runs_horses"]), many=True)
 
 
 class ClientSchema(SQLAlchemyAutoSchema):
@@ -79,9 +83,9 @@ class ClientSchema(SQLAlchemyAutoSchema):
         ordered = True
 
 
-class BetsSchema(SQLAlchemyAutoSchema):
+class BetSchema(SQLAlchemyAutoSchema):
     class Meta:
-        model = Bets
+        model = Bet
         load_instance = True
         sqla_session = db.session
         ordered = True

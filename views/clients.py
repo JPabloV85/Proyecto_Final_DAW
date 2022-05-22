@@ -3,12 +3,12 @@ import uuid
 from functools import wraps
 import flask_praetorian
 from flask import request, jsonify, current_app
-from flask_restx import Resource, Namespace
-from flask_restx.inputs import email
+from flask_restx import Resource, Namespace, inputs
 from sqlalchemy import text
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
-from model import Client, db, User, Bets, Role
+from config import API_KEY
+from model import Client, db, User, Bet, Role
 from schema import ClientSchema, UserSchema
 
 api_client = Namespace("Clients", "Clients management")
@@ -17,7 +17,7 @@ api_client = Namespace("Clients", "Clients management")
 parserPOST = api_client.parser()
 parserPOST.add_argument('Username', type=str, location='form', required=True, nullable=False)
 parserPOST.add_argument('CIF', type=str, location='form', required=True, nullable=False)
-parserPOST.add_argument('E-mail', type=email(), location='form', required=True, nullable=False)
+parserPOST.add_argument('E-mail', type=inputs.email(), location='form', required=True, nullable=False)
 parserPOST.add_argument('Password', type=str, location='form', required=True, nullable=False)
 parserPOST.add_argument('Image', type=FileStorage, location='files')
 
@@ -25,7 +25,7 @@ parserPOST.add_argument('Image', type=FileStorage, location='files')
 parserPUT = api_client.parser()
 parserPUT.add_argument('Username', type=str, location='form', nullable=False)
 parserPUT.add_argument('CIF', type=str, location='form', nullable=False)
-parserPUT.add_argument('E-mail', type=email(), location='form', nullable=False)
+parserPUT.add_argument('E-mail', type=inputs.email(), location='form', nullable=False)
 parserPUT.add_argument('Password', type=str, location='form', nullable=False)
 parserPUT.add_argument('Cash', type=float, location='form', nullable=False)
 parserPUT.add_argument('Image', type=FileStorage, location='files')
@@ -40,7 +40,7 @@ def apiKey_required(f):
             apiKey = request.headers['Authorization']
         if not apiKey:
             return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != 'myapikey':
+        if apiKey != API_KEY:
             return 'Your ApiKey is wrong!', 401
         return f(*args, **kwargs)
 
@@ -64,7 +64,7 @@ class ClientController(Resource):
     @flask_praetorian.auth_required
     def patch(self):
         betID = int(request.json.get("idBet"))
-        bet = Bets.query.get_or_404(betID)
+        bet = Bet.query.get_or_404(betID)
         bet.claimed = True
 
         idClient = getClientIDFromToken(request)
@@ -93,20 +93,20 @@ class ClientController(Resource):
         client = Client.query.get_or_404(idClient)
         clientData = ClientSchema().dump(client)
 
-        wonBets = Bets.query.filter(Bets.client_id == idClient, Bets.win.is_(True)).count()
+        wonBets = Bet.query.filter(Bet.client_id == idClient, Bet.win.is_(True)).count()
         clientData['wonBets'] = wonBets
 
         statement = text("""
                         select 
                         (
                             select coalesce(sum(b.payment_amount), 0)
-                            from bets b 
+                            from bet b 
                             where b.client_id == :clientID and b.win == TRUE and b.claimed == TRUE 
                         )
                         -
                         (
                             select coalesce(sum(b.bet_amount), 0)
-                            from bets b 
+                            from bet b 
                             where b.client_id == :clientID
                         )
                     """)

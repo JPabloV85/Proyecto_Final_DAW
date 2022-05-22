@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import request
-from flask_restx import Resource, Namespace
-from flask_restx.inputs import email
+from flask_restx import Resource, Namespace, inputs
+from config import API_KEY
 from model import Stud, db
 from schema import StudSchema
 
@@ -11,13 +11,13 @@ api_stud = Namespace("Studs", "Studs management")
 parserPOST = api_stud.parser()
 parserPOST.add_argument('Name', type=str, location='form', required=True, nullable=False)
 parserPOST.add_argument('Location', type=str, location='form', required=True, nullable=False)
-parserPOST.add_argument('E-mail', type=email(), location='form', required=True, nullable=False)
+parserPOST.add_argument('E-mail', type=inputs.email(), location='form', required=True, nullable=False)
 
 # SWAGGER PUT FORM FIELDS
 parserPUT = api_stud.parser()
 parserPUT.add_argument('Name', type=str, location='form', nullable=False)
 parserPUT.add_argument('Location', type=str, location='form', nullable=False)
-parserPUT.add_argument('E-mail', type=email(), location='form', nullable=False)
+parserPUT.add_argument('E-mail', type=inputs.email(), location='form', nullable=False)
 
 
 # custom decorator
@@ -29,7 +29,7 @@ def apiKey_required(f):
             apiKey = request.headers['Authorization']
         if not apiKey:
             return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != 'myapikey':
+        if apiKey != API_KEY:
             return 'Your ApiKey is wrong!', 401
         return f(*args, **kwargs)
 
@@ -82,15 +82,15 @@ class StudListController(Resource):
     @api_stud.doc(description='*Try it out* and hit *Execute* button. In *Code* section you will see a list of '
                               'studs stored in your database (*Response body*) and a code for a succeded or failed '
                               'operation.')
-    def get(self, headers=None):
+    def get(self):
         """Shows a detailed list of studs."""
         return StudSchema(many=True).dump(Stud.query.all()), 200
 
     @apiKey_required
     @api_stud.expect(parserPOST, validate=True)
     @api_stud.doc(description='*Try it out* and introduce some values in fields below; then, hit *Execute* button to '
-                              'create a new entry in your database. In *Code* section you will see your new '
-                              'object (*Response body*) and a code for a succeded or failed operation.')
+                              'create a new stud in your database. In *Code* section you will see your new '
+                              'stud (*Response body*) and a code for a succeded or failed operation.')
     def post(self):
         """Creates a new stud from entry data."""
         studRequest = {

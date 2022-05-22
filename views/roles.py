@@ -1,6 +1,7 @@
 from functools import wraps
 from flask import request
 from flask_restx import Resource, Namespace
+from config import API_KEY
 from model import Role, db
 from schema import RoleSchema
 
@@ -20,7 +21,7 @@ def apiKey_required(f):
             apiKey = request.headers['Authorization']
         if not apiKey:
             return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != 'myapikey':
+        if apiKey != API_KEY:
             return 'Your ApiKey is wrong!', 401
         return f(*args, **kwargs)
 
