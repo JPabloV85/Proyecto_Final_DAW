@@ -10,7 +10,7 @@ api_bet = Namespace("Bets", "Bets management")
 
 
 # Client endopoints
-@api_bet.route("/my_bets")
+@api_bet.route("/my_bets", doc=False)
 class BetController(Resource):
     @flask_praetorian.auth_required
     def get(self):
@@ -42,12 +42,12 @@ class BetController(Resource):
         return jsonify([{'id': r['id'],
                          'race_tag': r['tag'],
                          'horse_name': r['name'],
-                         'bet_position': r['bet_position'],
-                         'final_position': r['final_position'],
+                         #'bet_position': r['bet_position'],
+                         #'final_position': r['final_position'],
                          'win': r['win'],
                          'bet_amount': r['bet_amount'],
-                         'total_run_horse_bets': r['total_bet'],
-                         'benefit_ratio': r['benefit_ratio'],
+                         #'total_run_horse_bets': r['total_bet'],
+                         #'benefit_ratio': r['benefit_ratio'],
                          'payment_amount': r['payment_amount'],
                          'date': r['created_on'].split()[0],
                          'time': r['created_on'].split()[1],
@@ -55,26 +55,26 @@ class BetController(Resource):
                          } for r in result])
 
 
-@api_bet.route("/client_new_bet")
+@api_bet.route("/client_new_bet", doc=False)
 class BetController(Resource):
     @flask_praetorian.auth_required
     def post(self):
         run_id = int(request.json.get("race_id"))
         horse_id = int(request.json.get("horse_id"))
-        run_horse = Runs_Horses.query.filter(Runs_Horses.run_id == run_id, Runs_Horses.horse_id == horse_id)
-        idRunHorse = run_horse[0].id
+        run_horse = Runs_Horses.query.filter(Runs_Horses.run_id == run_id, Runs_Horses.horse_id == horse_id).first()
         idClient = getClientIDFromToken(request)
 
         del request.json["race_id"]
         del request.json["horse_id"]
         bet = BetSchema().load(request.json)
         setattr(bet, "client_id", idClient)
-        setattr(bet, "run_horse_id", idRunHorse)
+        setattr(bet, "run_horse_id", run_horse.id)
         db.session.add(bet)
 
         client = Client.query.get_or_404(idClient)
         bet_amount = float(request.json.get("bet_amount"))
         client.cash = round(client.cash - bet_amount, 2)
+        run_horse.total_bet += bet_amount
 
         db.session.commit()
         return jsonify({'new_cash': client.cash})

@@ -11,6 +11,8 @@ def create_app(config_file='config.py'):
     guard = flask_praetorian.Praetorian()
     app = Flask(__name__)
     app.config.from_pyfile(config_file)
+
+    # CORS configuration
     app_cors_config = {
         "origins": ["*"],
         "methods": ["OPTIONS", "GET", "POST", "PATCH", "PUT"],

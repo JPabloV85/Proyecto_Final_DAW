@@ -155,21 +155,15 @@ class ClientController(Resource):
         client = Client.query.get_or_404(client_id)
         user = User.query.filter(User.id == client.user_id).first()
 
-        if request.form.get("Username"):
-            user.username = request.form.get("Username")
-        if request.form.get("E-mail"):
-            user.email = request.form.get("E-mail")
-        if request.form.get("Password"):
-            user.hashed_password = guard.hash_password(request.form.get("Password"))
-        if request.form.get("CIF"):
-            client.cif = request.form.get("CIF")
-        if request.form.get("Cash"):
-            client.cash = request.form.get("Cash")
+        if request.form.get("Username"): user.username = request.form.get("Username")
+        if request.form.get("E-mail"): user.email = request.form.get("E-mail")
+        if request.form.get("Password"): user.hashed_password = guard.hash_password(request.form.get("Password"))
+        if request.form.get("CIF"): client.cif = request.form.get("CIF")
+        if request.form.get("Cash"): client.cash = request.form.get("Cash")
         if 'Image' in request.files:
             newImage = request.files['Image']
             folder = current_app.root_path + "/static/images/"
-            if client.image != "default_user.jpg":
-                os.unlink(os.path.join(folder + client.image))
+            if client.image != "default_user.jpg": os.unlink(os.path.join(folder + client.image))
             filename = str(uuid.uuid4().hex) + "_" + secure_filename(newImage.filename)
             newImage.save(folder + filename)
             client.image = filename

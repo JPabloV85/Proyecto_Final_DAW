@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flask_restx import Api
+from flask_restx import Api, apidoc
 import flask_praetorian
 
 # import namespaces
@@ -12,7 +12,6 @@ from .clients import api_client
 from .runs_horses import api_run_horse
 from .bets import api_bet
 
-# one blueprint (Flask) for all the resources
 blueprint = Blueprint('Winning Horse', __name__)
 authorizations = {
     'Authentication': {
@@ -29,9 +28,15 @@ api = Api(blueprint,
           authorizations=authorizations,
           description="Manage horse racing bets.",
           doc="/admin")
+
+## register custom swagger ui
+# @api.documentation
+# def custom_ui():
+#    return apidoc.ui_for(api)
+
+
 flask_praetorian.PraetorianError.register_error_handler_with_flask_restx(api_client)
 
-# every resource in a namespace (RestX)
 api.add_namespace(api_stud, path='/stud')
 api.add_namespace(api_horse, path='/horse')
 api.add_namespace(api_run, path='/run')

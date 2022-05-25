@@ -65,12 +65,9 @@ class StudController(Resource):
         """Updates a stud with entry data and given id."""
         stud = Stud.query.get_or_404(stud_id)
 
-        if request.form.get("Name"):
-            stud.name = request.form.get("Name")
-        if request.form.get("Location"):
-            stud.location = request.form.get("Location")
-        if request.form.get("E-mail"):
-            stud.email = request.form.get("E-mail")
+        if request.form.get("Name"): stud.name = request.form.get("Name")
+        if request.form.get("Location"): stud.location = request.form.get("Location")
+        if request.form.get("E-mail"): stud.email = request.form.get("E-mail")
 
         db.session.commit()
         return StudSchema().dump(stud), 200

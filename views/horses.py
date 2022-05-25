@@ -4,10 +4,11 @@ from functools import wraps
 import flask_praetorian
 from flask import request, current_app
 from flask_restx import Resource, Namespace, inputs
+from sqlalchemy import text
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 from config import API_KEY
-from model import Horse, db, Runs_Horses, Stud
+from model import Horse, db, Stud
 from schema import HorseSchema, StudSchema
 
 api_horse = Namespace("Horses", "Horses management")
@@ -52,24 +53,45 @@ def apiKey_required(f):
     return decorated
 
 
+# functions
+def getHorseWins(horseId):
+    horse = Horse.query.get_or_404(horseId)
+    horseData = HorseSchema().dump(horse)
+
+    statement = text("""
+                select rh.final_position, count(*) as times
+                from runs_horses rh
+                where rh.horse_id == :horseID
+                group by rh.final_position
+            """)
+    result = db.session.execute(statement, {"horseID": horseId})
+    data = [{'final_position': r['final_position'], 'times': r['times']} for r in result]
+
+    timesFirst = 0
+    timesSecond = 0
+    timesThird = 0
+    timesNotCelebrated = 0
+    for d in data:
+        if d.get('final_position') == 1: timesFirst = d.get('times')
+        if d.get('final_position') == 2: timesSecond = d.get('times')
+        if d.get('final_position') == 3: timesThird = d.get('times')
+        if d.get('final_position') is None: timesNotCelebrated = d.get('times')
+    horseData['timesFirst'] = timesFirst
+    horseData['timesSecond'] = timesSecond
+    horseData['timesThird'] = timesThird
+    horseData['timesNotCelebrated'] = timesNotCelebrated
+    horseData['timesOtherPosition'] = horseData.get(
+        'total_runs') - timesFirst - timesSecond - timesThird - timesNotCelebrated
+
+    return horseData
+
+
 # Client endopoints
 @api_horse.route("/detail/<horse_id>", doc=False)
 class HorseController(Resource):
     @flask_praetorian.auth_required
     def get(self, horse_id):
-        horse = Horse.query.get_or_404(horse_id)
-        horseData = HorseSchema().dump(horse)
-
-        timesFirst = Runs_Horses.query.filter(Runs_Horses.horse_id == horse_id, Runs_Horses.final_position == 1).count()
-        timesSecond = Runs_Horses.query.filter(Runs_Horses.horse_id == horse_id,
-                                               Runs_Horses.final_position == 2).count()
-        timesThird = Runs_Horses.query.filter(Runs_Horses.horse_id == horse_id, Runs_Horses.final_position == 3).count()
-
-        horseData['timesFirst'] = timesFirst
-        horseData['timesSecond'] = timesSecond
-        horseData['timesThird'] = timesThird
-
-        return horseData
+        return getHorseWins(horse_id)
 
 
 # Admin endopoints
@@ -103,19 +125,14 @@ class HorseController(Resource):
         """Updates a horse with entry data and given id."""
         horse = Horse.query.get_or_404(horse_id)
 
-        if request.form.get("EquineID"):
-            horse.equineID = request.form.get("EquineID")
-        if request.form.get("Name"):
-            horse.name = request.form.get("Name")
-        if request.form.get("Breed"):
-            horse.breed = request.form.get("Breed")
-        if request.form.get("Age"):
-            horse.age = request.form.get("Age")
+        if request.form.get("EquineID"): horse.equineID = request.form.get("EquineID")
+        if request.form.get("Name"): horse.name = request.form.get("Name")
+        if request.form.get("Breed"): horse.breed = request.form.get("Breed")
+        if request.form.get("Age"): horse.age = request.form.get("Age")
         if 'Image' in request.files:
             newImage = request.files['Image']
             folder = current_app.root_path + "/static/images/"
-            if horse.image != "default_horse.jpg":
-                os.unlink(os.path.join(folder + horse.image))
+            if horse.image != "default_horse.jpg": os.unlink(os.path.join(folder + horse.image))
             filename = str(uuid.uuid4().hex) + "_" + secure_filename(newImage.filename)
             newImage.save(folder + filename)
             horse.image = filename

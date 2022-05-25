@@ -51,9 +51,9 @@ def seed_db(app, guard):
             Stud(name="yeguada3", location="Madrid", email="wtgwergf@svsd.com")
         ]
         horses = [
-            Horse(equineID="03IT824", name="caballo1", breed="Appaloosa", age=8, win_ratio=30.4, stud=studs[0]),
-            Horse(equineID="52ES456", name="caballo2", breed="American Quarter Horse", age=7, win_ratio=50.4, stud=studs[1]),
-            Horse(equineID="42US957", name="caballo3", breed="Thoroughbred", age=10, win_ratio=27.4, stud=studs[2])
+            Horse(equineID="03IT824", name="caballo1", breed="Appaloosa", age=8, stud=studs[0]),
+            Horse(equineID="52ES456", name="caballo2", breed="American Quarter Horse", age=7, stud=studs[1]),
+            Horse(equineID="42US957", name="caballo3", breed="Thoroughbred", age=10, stud=studs[2])
         ]
         runs = [
             Run(tag="20JAN-01", date="20/01/2022", time="13.00"),

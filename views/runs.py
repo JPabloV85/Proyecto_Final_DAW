@@ -12,12 +12,10 @@ api_run = Namespace("Runs", "Runs management")
 # SWAGGER POST FORM FIELDS
 parserPOST = api_run.parser()
 parserPOST.add_argument('Tag', type=str, location='form', required=True, nullable=False)
-parserPOST.add_argument('Date', type=str, location='form', required=True, nullable=False, help='Introduce date in '
-                                                                                               'proper format: '
-                                                                                               'DD/MM/YYYY')
-parserPOST.add_argument('Time', type=str, location='form', required=True, nullable=False, help='Introduce time in '
-                                                                                               'proper format: HH:MM')
-
+parserPOST.add_argument('Date', type=str, location='form', required=True, nullable=False,
+                        help='Introduce date in proper format: DD/MM/YYYY')
+parserPOST.add_argument('Time', type=str, location='form', required=True, nullable=False,
+                        help='Introduce time in proper format: HH:MM')
 
 # SWAGGER PUT FORM FIELDS
 parserPUT = api_run.parser()
@@ -91,19 +89,15 @@ class RunController(Resource):
         """Modify a run with entry data and given id."""
         run = Run.query.get_or_404(run_id)
 
-        if request.form.get("Tag"):
-            run.tag = request.form.get("Tag")
-        if request.form.get("Date"):
-            run.date = request.form.get("Date")
-        if request.form.get("Time"):
-            run.time = request.form.get("Time")
+        if request.form.get("Tag"): run.tag = request.form.get("Tag")
+        if request.form.get("Date"): run.date = request.form.get("Date")
+        if request.form.get("Time"): run.time = request.form.get("Time")
         if request.form.get("Add Horse (equineID)"):
             horse = Horse.query.filter(Horse.equineID == request.form.get("Add Horse (equineID)")).first()
             run.horses.append(horse)
         if request.form.get("Remove Horse (equineID)"):
             horse = Horse.query.filter(Horse.equineID == request.form.get("Remove Horse (equineID)")).first()
-            if horse in run.horses:
-                run.horses.remove(horse)
+            if horse in run.horses: run.horses.remove(horse)
 
         db.session.commit()
         return RunSchema().dump(run), 200

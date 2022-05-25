@@ -92,16 +92,15 @@ class ClientListController(Resource):
         try:
             clientID = getClientIDFromToken(request)
             client = Client.query.get_or_404(clientID)
-            user = User.query.get_or_404(client.user_id)
 
+            user = User.query.get_or_404(client.user_id)
             user.username = request.form.get("username")
             user.email = request.form.get("email")
 
             newImage = request.files['image']
             if newImage:
                 folder = current_app.root_path + "/static/images/"
-                if client.image != "default_user.jpg":
-                    os.unlink(os.path.join(folder + client.image))
+                if client.image != "default_user.jpg": os.unlink(os.path.join(folder + client.image))
                 filename = str(uuid.uuid4().hex) + "_" + secure_filename(newImage.filename)
                 newImage.save(folder + filename)
                 client.image = filename
@@ -149,19 +148,15 @@ class UserController(Resource):
 
         user = User.query.get_or_404(user_id)
 
-        if request.form.get("Username"):
-            user.username = request.form.get("Username")
-        if request.form.get("E-mail"):
-            user.email = request.form.get("E-mail")
-        if request.form.get("Password"):
-            user.hashed_password = guard.hash_password(request.form.get("Password"))
+        if request.form.get("Username"): user.username = request.form.get("Username")
+        if request.form.get("E-mail"): user.email = request.form.get("E-mail")
+        if request.form.get("Password"): user.hashed_password = guard.hash_password(request.form.get("Password"))
         if request.form.get("Add Role"):
             role = Role.query.filter(Role.name == request.form.get("Add Role")).first()
             user.roles.append(role)
         if request.form.get("Delete Role"):
             role = Role.query.filter(Role.name == request.form.get("Delete Role")).first()
-            if role in user.roles:
-                user.roles.remove(role)
+            if role in user.roles: user.roles.remove(role)
 
         db.session.commit()
         return UserSchema().dump(user), 200

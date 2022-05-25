@@ -7,6 +7,7 @@ from config import API_KEY
 from model import Runs_Horses, db, Bet, Run, Horse
 from schema import RunSchema
 from views.clients import getClientIDFromToken
+from views.horses import getHorseWins
 
 api_run_horse = Namespace("Runs_Horses", "Runs_Horses management")
 
@@ -14,7 +15,7 @@ api_run_horse = Namespace("Runs_Horses", "Runs_Horses management")
 parserPUT = api_run_horse.parser()
 parserPUT.add_argument('Run Tag', type=str, location='form', required=True)
 parserPUT.add_argument('Horse(equineID)', type=str, location='form', required=True)
-parserPUT.add_argument('Position', type=int, location='form', required=True, choices=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+parserPUT.add_argument('Position', type=int, location='form', required=True, choices=[1, 2, 3, 4, 5])
 
 
 # custom decorator
@@ -34,7 +35,7 @@ def apiKey_required(f):
 
 
 # Client endopoints
-@api_run_horse.route("/getHorses", doc=False)
+@api_run_horse.route("/getParticipants", doc=False)
 class Runs_HorsesController(Resource):
     @flask_praetorian.auth_required
     def post(self):
@@ -64,8 +65,16 @@ class Runs_HorsesController(Resource):
                 run_horse['bet_done'] = True
             else:
                 run_horse['bet_done'] = False
-            new_horses_response.append(run_horse)
 
+            # Añado la info de victorias del caballo
+            horse = getHorseWins(run_horse.get('horse_id'))
+            run_horse['timesFirst'] = horse.get('timesFirst')
+            run_horse['timesSecond'] = horse.get('timesSecond')
+            run_horse['timesThird'] = horse.get('timesThird')
+            run_horse['timesOtherPosition'] = horse.get('timesOtherPosition')
+            run_horse['runs_completed'] = horse.get('timesFirst') + horse.get('timesSecond') + horse.get('timesThird') + horse.get('timesOtherPosition')
+
+            new_horses_response.append(run_horse)
         return new_horses_response
 
 
@@ -97,13 +106,14 @@ class Runs_HorsesListController(Resource):
     def get(self):
         """Shows a detailed list of runs with registered horses along with their positions."""
         runs = RunSchema(many=True).dump(Run.query.all())
+        statement = text("""
+                        select rh.horse_id, rh.final_position 
+                        from runs_horses rh
+                        where rh.run_id == :runId
+                        order by rh.horse_id asc
+                    """)
+
         for run in runs:
-            statement = text("""
-                select rh.horse_id, rh.final_position 
-                from runs_horses rh
-                where rh.run_id == :runId
-                order by rh.horse_id asc
-            """)
             result = db.session.execute(statement, {"runId": run.get('id')})
             for horse, r in zip(run.get("horses"), result):
                 if r['final_position'] is None:
@@ -118,9 +128,24 @@ class Runs_HorsesListController(Resource):
         """Update horses final position for a given run tag"""
         run = Run.query.filter(Run.tag == request.form.get("Run Tag")).first()
         horse = Horse.query.filter(Horse.equineID == request.form.get("Horse(equineID)")).first()
-
         run_horse = Runs_Horses.query.filter(Runs_Horses.run_id == run.id, Runs_Horses.horse_id == horse.id).first()
         run_horse.final_position = request.form.get("Position")
+
+        # Actualizar estado WIN de las bets asociadas a la carrera y caballo
+        bets = Bet.query.filter(Bet.run_horse_id == run_horse.id).all()
+        for bet in bets:
+            if bet.bet_position == run_horse.final_position:
+                bet.win = True
+            else:
+                bet.win = False
+
+        # Actualizar el win ratio del caballo
+        runs_completed = Runs_Horses.query.filter(Runs_Horses.horse_id == horse.id, Runs_Horses.final_position != None).count()
+        runs_win = Runs_Horses.query.filter(Runs_Horses.horse_id == horse.id, Runs_Horses.final_position == 1).count()
+        if runs_win == 0:
+            horse.win_ratio = 0
+        else:
+            horse.win_ratio = round(runs_win / runs_completed, 2) * 100
 
         db.session.commit()
         return "Horse " + horse.equineID + " final position set to: " + str(run_horse.final_position), 200

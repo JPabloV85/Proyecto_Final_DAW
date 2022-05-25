@@ -38,11 +38,11 @@ class StudSchema(SQLAlchemyAutoSchema):
 class HorseSchema(SQLAlchemyAutoSchema):
     stud = fields.Nested(StudSchema(only=["name", "location", "email"], exclude=["horses"]))
     runs = fields.Nested(lambda: RunSchema(exclude=["horses"]), load_only=True, many=True)
-    runs_completed = marshmallow.fields.Function(lambda obj: len(obj.runs))
+    total_runs = marshmallow.fields.Function(lambda obj: len(obj.runs))
 
     class Meta:
         model = Horse
-        fields = ["id", "equineID", "name", "age", "breed", "runs", "runs_completed", "image", "stud"]
+        fields = ["id", "equineID", "name", "age", "breed", "runs", "total_runs", "image", "stud"]
         load_instance = True
         sqla_session = db.session
         ordered = True
