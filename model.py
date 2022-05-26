@@ -248,7 +248,6 @@ class Runs_Horses(db.Model):
     __tablename__ = 'runs_horses'
     id = db.Column(db.Integer, primary_key=True)
     final_position = db.Column(db.Integer)
-    total_bet = db.Column(db.Float, default=0)
 
     run_id = db.Column(db.Integer, db.ForeignKey('run.id'), nullable=False)
     horse_id = db.Column(db.Integer, db.ForeignKey('horse.id'), nullable=False)
@@ -276,6 +275,7 @@ class Client(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     runs_horses = db.relationship('Runs_Horses', secondary='bet', back_populates='clients', uselist=True)
+    bets = db.relationship("Bet", backref="client", viewonly=True, uselist=True)
 
     created_on = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_on = db.Column(db.DateTime(timezone=True), onupdate=func.now())
