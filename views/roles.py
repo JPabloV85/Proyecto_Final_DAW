@@ -29,25 +29,28 @@ def apiKey_required(f):
 
 
 # Admin endopoints
-@api_role.route("/<int:role_id>")
+@api_role.route("/Role/<Role_Name>")
 class RoleController(Resource):
     @apiKey_required
-    def get(self, role_id):
-        """Shows a detailed role from given id."""
-        role = Role.query.get_or_404(role_id)
+    def get(self, Role_Name):
+        """Shows a detailed role from given Role_Name."""
+        role = Role.query.filter(Role.name == Role_Name).first()
         return RoleSchema().dump(role), 200
 
     @apiKey_required
     @api_role.doc(description='*Try it out* and introduce a role id you want to delete; then, hit *Execute* button to '
                               'delete the desired role from your database. In *Code* section you will see the '
                               'deleted role (*Response body*) and a code for a succeded or failed operation.')
-    def delete(self, role_id):
-        """Deletes a role from given id."""
-        role = Role.query.get_or_404(role_id)
+    def delete(self, Role_Name):
+        """Deletes a role from given Role_Name."""
+        role = Role.query.filter(Role.name == Role_Name).first()
         db.session.delete(role)
         db.session.commit()
         return RoleSchema().dump(role), 200
 
+
+@api_role.route("/<role_id>")
+class RoleController(Resource):
     @apiKey_required
     @api_role.expect(parser, validate=True)
     @api_role.doc(description='*Try it out* and introduce the role data and role id you want to modify; then, '

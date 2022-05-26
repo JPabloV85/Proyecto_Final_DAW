@@ -119,12 +119,12 @@ class ClientController(Resource):
 
 
 # Admin endopoints
-@api_client.route("/<int:client_id>")
+@api_client.route("/Client/<CIF>")
 class ClientController(Resource):
     @apiKey_required
-    def get(self, client_id):
-        """Shows a detailed client from given id."""
-        client = Client.query.get_or_404(client_id)
+    def get(self, CIF):
+        """Shows a detailed client from given CIF."""
+        client = Client.query.filter(Client.cif == CIF).first()
         return ClientSchema().dump(client), 200
 
     @apiKey_required
@@ -132,16 +132,18 @@ class ClientController(Resource):
                                 'button to delete the desired client from your database. In *Code* section you will '
                                 'see the deleted client (*Response body*) and a code for a succeded or failed '
                                 'operation.')
-    def delete(self, client_id):
-        """Deletes a client from given id."""
-        client = Client.query.get_or_404(client_id)
+    def delete(self, CIF):
+        """Deletes a client from given CIF."""
+        client = Client.query.filter(Client.cif == CIF).first()
         clientData = ClientSchema().dump(client)
         user = User.query.filter(User.id == client.user_id).first()
-        db.session.delete(client)
         db.session.delete(user)
         db.session.commit()
         return clientData, 200
 
+
+@api_client.route("/<client_id>")
+class ClientController(Resource):
     @apiKey_required
     @api_client.expect(parserPUT, validate=True)
     @api_client.doc(description='*Try it out* and introduce the client data and client id you want to modify; then, '

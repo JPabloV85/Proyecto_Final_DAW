@@ -79,12 +79,12 @@ class Runs_HorsesController(Resource):
 
 
 # Admin endopoints
-@api_run_horse.route("/<Runtag>")
+@api_run_horse.route("/<RunTag>")
 class Runs_HorsesController(Resource):
     @apiKey_required
-    def get(self, Runtag):
+    def get(self, RunTag):
         """Shows a detailed run with registered horses along with their positions."""
-        run = RunSchema().dump(Run.query.filter(Run.tag == Runtag).first())
+        run = RunSchema().dump(Run.query.filter(Run.tag == RunTag).first())
         statement = text("""
                         select rh.horse_id, rh.final_position 
                         from runs_horses rh

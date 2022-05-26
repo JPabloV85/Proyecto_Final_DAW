@@ -61,25 +61,28 @@ class RunListController(Resource):
 
 
 # Admin endopoints
-@api_run.route("/<run_id>")
+@api_run.route("/Run/<Tag>")
 class RunController(Resource):
     @apiKey_required
-    def get(self, run_id):
-        """Shows a detailed run from given id."""
-        run = Run.query.get_or_404(run_id)
+    def get(self, Tag):
+        """Shows a detailed run from given Tag."""
+        run = Run.query.filter(Run.tag == Tag).first()
         return RunSchema().dump(run), 200
 
     @apiKey_required
     @api_run.doc(description='*Try it out* and introduce a run id you want to delete; then, hit *Execute* button to '
                              'delete the desired run from your database. In *Code* section you will see the '
                              'deleted run (*Response body*) and a code for a succeded or failed operation.')
-    def delete(self, run_id):
-        """Deletes a run from given id."""
-        run = Run.query.get_or_404(run_id)
+    def delete(self, Tag):
+        """Deletes a run from given Tag."""
+        run = Run.query.filter(Run.tag == Tag).first()
         db.session.delete(run)
         db.session.commit()
         return RunSchema().dump(run), 200
 
+
+@api_run.route("/<run_id>")
+class RunController(Resource):
     @apiKey_required
     @api_run.expect(parserPUT, validate=True)
     @api_run.doc(description='*Try it out* and introduce the run data and run id you want to modify; then, '

@@ -37,7 +37,7 @@ def apiKey_required(f):
 
 
 # Admin endopoints
-@api_stud.route("/<int:stud_id>")
+@api_stud.route("/<stud_id>")
 class StudController(Resource):
     @apiKey_required
     def get(self, stud_id):

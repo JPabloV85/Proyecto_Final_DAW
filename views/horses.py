@@ -95,12 +95,12 @@ class HorseController(Resource):
 
 
 # Admin endopoints
-@api_horse.route("/<horse_id>")
+@api_horse.route("/Horse/<EquineID>")
 class HorseController(Resource):
     @apiKey_required
-    def get(self, horse_id):
-        """Shows a detailed horse from given id."""
-        horse = Horse.query.get_or_404(horse_id)
+    def get(self, EquineID):
+        """Shows a detailed horse from given EquineID."""
+        horse = Horse.query.filter(Horse.equineID == EquineID).first()
         return HorseSchema().dump(horse), 200
 
     @apiKey_required
@@ -108,14 +108,17 @@ class HorseController(Resource):
         description='*Try it out* and introduce a horse id you want to delete; then, hit *Execute* button to '
                     'delete the desired horse from your database. In *Code* section you will see the '
                     'deleted horse (*Response body*) and a code for a succeded or failed operation.')
-    def delete(self, horse_id):
-        """Deletes a run from given id."""
-        horse = Horse.query.get_or_404(horse_id)
+    def delete(self, EquineID):
+        """Deletes a run from given EquineID."""
+        horse = Horse.query.filter(Horse.equineID == EquineID).first()
         horseData = HorseSchema().dump(horse)
         db.session.delete(horse)
         db.session.commit()
         return horseData, 200
 
+
+@api_horse.route("/<horse_id>")
+class HorseController(Resource):
     @apiKey_required
     @api_horse.expect(parserPUT, validate=True)
     @api_horse.doc(description='*Try it out* and introduce the horse data and stud id you want to modify; then, '

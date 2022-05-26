@@ -18,7 +18,8 @@ parserPOST = api_user.parser()
 parserPOST.add_argument('Username', type=str, location='form', required=True, nullable=False)
 parserPOST.add_argument('E-mail', type=inputs.email(), location='form', required=True, nullable=False)
 parserPOST.add_argument('Password', type=str, location='form', required=True, nullable=False)
-parserPOST.add_argument('Add Role', type=str, location='form', required=True, nullable=False, choices=['admin', 'client'])
+parserPOST.add_argument('Add Role', type=str, location='form', required=True, nullable=False,
+                        choices=['admin', 'client'])
 
 # SWAGGER PUT FORM FIELDS
 parserPUT = api_user.parser()
@@ -117,25 +118,28 @@ class ClientListController(Resource):
 
 
 # Admin endopoints
-@api_user.route("/<int:user_id>")
+@api_user.route("/User/<Username>")
 class UserController(Resource):
     @apiKey_required
-    def get(self, user_id):
-        """Shows a detailed user from given id."""
-        user = User.query.get_or_404(user_id)
+    def get(self, Username):
+        """Shows a detailed user from given Username."""
+        user = User.query.filter(User.username == Username).first()
         return UserSchema().dump(user), 200
 
     @apiKey_required
     @api_user.doc(description='*Try it out* and introduce a user id you want to delete; then, hit *Execute* button to '
                               'delete the desired user from your database. In *Code* section you will see the '
                               'deleted user (*Response body*) and a code for a succeded or failed operation.')
-    def delete(self, user_id):
-        """Deletes an user from given id."""
-        user = User.query.get_or_404(user_id)
+    def delete(self, Username):
+        """Deletes an user from given Username."""
+        user = User.query.filter(User.username == Username).first()
         db.session.delete(user)
         db.session.commit()
         return UserSchema().dump(user), 200
 
+
+@api_user.route("/<user_id>")
+class UserController(Resource):
     @apiKey_required
     @api_user.expect(parserPUT, validate=True)
     @api_user.doc(description='*Try it out* and introduce the user data and user id you want to modify; then, '
