@@ -1,9 +1,8 @@
-from functools import wraps
 import flask_praetorian
 from flask import request, jsonify
 from flask_restx import Resource, Namespace, inputs
 from sqlalchemy import text
-from config import API_KEY
+from config import apiKey_required
 from model import Run, db, Horse
 from schema import RunSchema
 
@@ -24,22 +23,6 @@ parserPUT.add_argument('Date', type=inputs.date("2012-01-01"), location='form', 
 parserPUT.add_argument('Time', type=inputs.email(), location='form', nullable=False)
 parserPUT.add_argument('Add Horse (equineID)', type=str, location='form', nullable=False)
 parserPUT.add_argument('Remove Horse (equineID)', type=str, location='form', nullable=False)
-
-
-# custom decorator
-def apiKey_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        apiKey = None
-        if 'Authorization' in request.headers:
-            apiKey = request.headers['Authorization']
-        if not apiKey:
-            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != API_KEY:
-            return 'Your ApiKey is wrong!', 401
-        return f(*args, **kwargs)
-
-    return decorated
 
 
 # Client endopoints
@@ -81,16 +64,16 @@ class RunController(Resource):
         return RunSchema().dump(run), 200
 
 
-@api_run.route("/<run_id>")
+@api_run.route("/<Run_id>")
 class RunController(Resource):
     @apiKey_required
     @api_run.expect(parserPUT, validate=True)
     @api_run.doc(description='*Try it out* and introduce the run data and run id you want to modify; then, '
                              'hit *Execute* button to apply your changes. In *Code* section you will see the '
                              'modified run (*Code*) and a code for a succeded or failed operation.')
-    def put(self, run_id):
+    def put(self, Run_id):
         """Modify a run with entry data and given id."""
-        run = Run.query.get_or_404(run_id)
+        run = Run.query.get_or_404(Run_id)
 
         if request.form.get("Tag"): run.tag = request.form.get("Tag")
         if request.form.get("Date"): run.date = request.form.get("Date")

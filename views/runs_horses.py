@@ -1,9 +1,8 @@
-from functools import wraps
 import flask_praetorian
 from flask import request, jsonify
 from flask_restx import Resource, Namespace
 from sqlalchemy import text
-from config import API_KEY
+from config import apiKey_required
 from model import Runs_Horses, db, Bet, Run, Horse
 from schema import RunSchema
 from views.clients import getClientIDFromToken
@@ -16,22 +15,6 @@ parserPUT = api_run_horse.parser()
 parserPUT.add_argument('Run Tag', type=str, location='form', required=True)
 parserPUT.add_argument('Horse(equineID)', type=str, location='form', required=True)
 parserPUT.add_argument('Position', type=int, location='form', required=True, choices=[1, 2, 3, 4, 5])
-
-
-# custom decorator
-def apiKey_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        apiKey = None
-        if 'Authorization' in request.headers:
-            apiKey = request.headers['Authorization']
-        if not apiKey:
-            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != API_KEY:
-            return 'Your ApiKey is wrong!', 401
-        return f(*args, **kwargs)
-
-    return decorated
 
 
 # Client endopoints

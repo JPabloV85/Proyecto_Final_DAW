@@ -1,13 +1,12 @@
 import os
 import uuid
-from functools import wraps
 import flask_praetorian
 from flask import request, current_app
 from flask_restx import Resource, Namespace, inputs
 from sqlalchemy import text
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
-from config import API_KEY
+from config import apiKey_required
 from model import Horse, db, Stud
 from schema import HorseSchema, StudSchema
 
@@ -37,23 +36,6 @@ parserPUT.add_argument('Image', type=FileStorage, location='files')
 parserPUT.add_argument('New Stud (name)', type=str, location='form')
 
 
-# custom decorator
-def apiKey_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        apiKey = None
-        if 'Authorization' in request.headers:
-            apiKey = request.headers['Authorization']
-        if not apiKey:
-            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != API_KEY:
-            return 'Your ApiKey is wrong!', 401
-        return f(*args, **kwargs)
-
-    return decorated
-
-
-# functions
 def getHorseWins(horseId):
     horse = Horse.query.get_or_404(horseId)
     horseData = HorseSchema().dump(horse)
@@ -117,16 +99,16 @@ class HorseController(Resource):
         return horseData, 200
 
 
-@api_horse.route("/<horse_id>")
+@api_horse.route("/<Horse_id>")
 class HorseController(Resource):
     @apiKey_required
     @api_horse.expect(parserPUT, validate=True)
     @api_horse.doc(description='*Try it out* and introduce the horse data and stud id you want to modify; then, '
                                'hit *Execute* button to apply your changes. In *Code* section you will see the '
                                'modified horse (*Code*) and a code for a succeded or failed operation.')
-    def put(self, horse_id):
+    def put(self, Horse_id):
         """Updates a horse with entry data and given id."""
-        horse = Horse.query.get_or_404(horse_id)
+        horse = Horse.query.get_or_404(Horse_id)
 
         if request.form.get("EquineID"): horse.equineID = request.form.get("EquineID")
         if request.form.get("Name"): horse.name = request.form.get("Name")

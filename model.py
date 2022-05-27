@@ -69,7 +69,7 @@ def seed_db(app, guard):
         ]
         bets = [
             Bet(client_id=1, run_horse_id=1, payment_amount=30.7, bet_position=2, bet_amount=10.5, win=True),
-            Bet(client_id=1, run_horse_id=2, bet_position=1, bet_amount=20,),
+            Bet(client_id=1, run_horse_id=2, bet_position=1, bet_amount=20),
             Bet(client_id=1, run_horse_id=4, payment_amount=50, bet_position=2, bet_amount=30.5, win=False),
             Bet(client_id=1, run_horse_id=5, payment_amount=10.5, bet_position=1, bet_amount=5, win=True)
         ]

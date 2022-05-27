@@ -1,5 +1,5 @@
 from authlib.integrations.flask_client import OAuth
-from flask import Flask, request, jsonify, url_for, render_template, redirect
+from flask import Flask, request, jsonify, url_for, render_template
 import flask_praetorian
 from flask_cors import CORS
 from forms import AdminLoginForm
@@ -54,13 +54,17 @@ def create_app(config_file='config.py'):
         if form.validate_on_submit():
             username = form.username.data
             password = form.password.data
-            user = guard.authenticate(username, password)
-            user_roles = [role.name for role in user.roles]
+            try:
+                user = guard.authenticate(username, password)
+                user_roles = [role.name for role in user.roles]
 
-            if user is not None and "admin" in user_roles:
-                return redirect(url_for("Winning Horse.doc"))
-            form.username.errors.append("Error: Introduce ADMIN credentials to login")
+                if user and "admin" in user_roles:
+                    token = guard.encode_jwt_token(user)
+                    return render_template("swagger.html", token=token)
 
+            except:
+                form.username.errors.append("Error: Introduce ADMIN credentials to login")
+                return render_template("admin_login.html", form=form)
         return render_template("admin_login.html", form=form)
 
     # client authentication login
@@ -76,9 +80,9 @@ def create_app(config_file='config.py'):
         password = request.json.get('password')
 
         user = guard.authenticate(username, password)
-        ret = {"access_token": guard.encode_jwt_token(user)}
+        token = {"access_token": guard.encode_jwt_token(user)}
 
-        return jsonify(ret), 200
+        return jsonify(token), 200
 
     @app.route('/github')
     def oauth_login():

@@ -7,7 +7,7 @@ from flask_restx import Resource, Namespace, inputs
 from sqlalchemy import text
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
-from config import API_KEY
+from config import API_KEY, apiKey_required
 from model import Client, db, User, Bet, Role
 from schema import ClientSchema, UserSchema
 
@@ -29,22 +29,6 @@ parserPUT.add_argument('E-mail', type=inputs.email(), location='form', nullable=
 parserPUT.add_argument('Password', type=str, location='form', nullable=False)
 parserPUT.add_argument('Cash', type=float, location='form', nullable=False)
 parserPUT.add_argument('Image', type=FileStorage, location='files')
-
-
-# custom decorator
-def apiKey_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        apiKey = None
-        if 'Authorization' in request.headers:
-            apiKey = request.headers['Authorization']
-        if not apiKey:
-            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != API_KEY:
-            return 'Your ApiKey is wrong!', 401
-        return f(*args, **kwargs)
-
-    return decorated
 
 
 def getClientIDFromToken(request):
@@ -142,19 +126,19 @@ class ClientController(Resource):
         return clientData, 200
 
 
-@api_client.route("/<client_id>")
+@api_client.route("/<Client_id>")
 class ClientController(Resource):
     @apiKey_required
     @api_client.expect(parserPUT, validate=True)
     @api_client.doc(description='*Try it out* and introduce the client data and client id you want to modify; then, '
                                 'hit *Execute* button to apply your changes. In *Code* section you will see the '
                                 'modified client (*Code*) and a code for a succeded or failed operation.')
-    def put(self, client_id):
+    def put(self, Client_id):
         """Updates a client with entry data and given id."""
         guard = flask_praetorian.Praetorian()
         guard.init_app(current_app, User)
 
-        client = Client.query.get_or_404(client_id)
+        client = Client.query.get_or_404(Client_id)
         user = User.query.filter(User.id == client.user_id).first()
 
         if request.form.get("Username"): user.username = request.form.get("Username")

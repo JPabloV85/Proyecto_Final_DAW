@@ -1,5 +1,5 @@
 from flask import Blueprint
-from flask_restx import Api, apidoc
+from flask_restx import Api
 import flask_praetorian
 
 # import namespaces
@@ -23,11 +23,12 @@ authorizations = {
 }
 api = Api(blueprint,
           title="Winning Horse",
-          version="1.0",
+          version="1.0.0",
           security='Authentication',
           authorizations=authorizations,
-          description="Manage horse racing bets.",
-          doc="/admin")
+          description="This is the panel for admins of Winning Horse server.  For this panel, you must use the "
+                      "`Apikey` to authorize your credentials due to use any of methods below.",
+          doc="/Winning_Horse")
 
 ## register custom swagger ui
 # @api.documentation

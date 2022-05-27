@@ -1,12 +1,11 @@
 import os.path
 import uuid
-from functools import wraps
 import flask_praetorian
 from flask import request, current_app
 from flask_restx import Resource, Namespace, inputs
 from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.utils import secure_filename
-from config import API_KEY
+from config import apiKey_required
 from model import User, db, Role, Client
 from schema import UserSchema, ClientSchema
 from views.clients import getClientIDFromToken
@@ -28,22 +27,6 @@ parserPUT.add_argument('E-mail', type=inputs.email(), location='form', nullable=
 parserPUT.add_argument('Password', type=str, location='form', nullable=False)
 parserPUT.add_argument('Add Role', type=str, location='form', nullable=False, choices=['admin', 'client'])
 parserPUT.add_argument('Delete Role', type=str, location='form', nullable=False, choices=['admin', 'client'])
-
-
-# custom decorator
-def apiKey_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        apiKey = None
-        if 'Authorization' in request.headers:
-            apiKey = request.headers['Authorization']
-        if not apiKey:
-            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != API_KEY:
-            return 'Your ApiKey is wrong!', 401
-        return f(*args, **kwargs)
-
-    return decorated
 
 
 # Client endopoints
@@ -138,19 +121,19 @@ class UserController(Resource):
         return UserSchema().dump(user), 200
 
 
-@api_user.route("/<user_id>")
+@api_user.route("/<User_id>")
 class UserController(Resource):
     @apiKey_required
     @api_user.expect(parserPUT, validate=True)
     @api_user.doc(description='*Try it out* and introduce the user data and user id you want to modify; then, '
                               'hit *Execute* button to apply your changes. In *Code* section you will see the '
                               'modified user (*Code*) and a code for a succeded or failed operation.')
-    def put(self, user_id):
+    def put(self, User_id):
         """Updates a user with entry data and given id."""
         guard = flask_praetorian.Praetorian()
         guard.init_app(current_app, User)
 
-        user = User.query.get_or_404(user_id)
+        user = User.query.get_or_404(User_id)
 
         if request.form.get("Username"): user.username = request.form.get("Username")
         if request.form.get("E-mail"): user.email = request.form.get("E-mail")

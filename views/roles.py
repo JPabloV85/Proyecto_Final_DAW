@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import request
 from flask_restx import Resource, Namespace
-from config import API_KEY
+from config import apiKey_required
 from model import Role, db
 from schema import RoleSchema
 
@@ -10,22 +10,6 @@ api_role = Namespace("Roles", "Roles management")
 # SWAGGER FORM FIELDS
 parser = api_role.parser()
 parser.add_argument('Name', type=str, location='form', required=True, nullable=False)
-
-
-# custom decorator
-def apiKey_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        apiKey = None
-        if 'Authorization' in request.headers:
-            apiKey = request.headers['Authorization']
-        if not apiKey:
-            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != API_KEY:
-            return 'Your ApiKey is wrong!', 401
-        return f(*args, **kwargs)
-
-    return decorated
 
 
 # Admin endopoints
@@ -49,16 +33,16 @@ class RoleController(Resource):
         return RoleSchema().dump(role), 200
 
 
-@api_role.route("/<role_id>")
+@api_role.route("/<Role_id>")
 class RoleController(Resource):
     @apiKey_required
     @api_role.expect(parser, validate=True)
     @api_role.doc(description='*Try it out* and introduce the role data and role id you want to modify; then, '
                               'hit *Execute* button to apply your changes. In *Code* section you will see the '
                               'modified role (*Code*) and a code for a succeded or failed operation.')
-    def put(self, role_id):
+    def put(self, Role_id):
         """Updates a role with entry data and given id."""
-        role = Role.query.get_or_404(role_id)
+        role = Role.query.get_or_404(Role_id)
         role.name = request.form.get("Name")
         db.session.commit()
         return RoleSchema().dump(role), 200

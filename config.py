@@ -2,10 +2,31 @@
 App configuration
 """
 import os
+from functools import wraps
+from flask import request
+
 
 ###
 # develop ApiKey
 API_KEY = 'alberti'
+
+
+###
+# custom decorator
+def apiKey_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        apiKey = None
+        if 'Authorization' in request.headers:
+            apiKey = request.headers['Authorization']
+        if not apiKey:
+            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
+        if apiKey != API_KEY:
+            return 'Your ApiKey is wrong!', 401
+        return f(*args, **kwargs)
+
+    return decorated
+
 
 ###
 # keep declaration order on jason dicts

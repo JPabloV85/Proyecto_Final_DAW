@@ -1,0 +1,1080 @@
+{
+  "swagger": "2.0",
+  "basePath": "/api",
+  "paths": {
+    "/bet/client/{Username}": {
+      "parameters": [
+        {
+          "name": "Username",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed list of bets from given Client username",
+        "description": "*Try it out* and introduce a client username, then, hit *Execute* button to show a list of your client bets. In *Code* section you will see the list (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "get_bet_list_controller",
+        "tags": [
+          "Bets"
+        ]
+      }
+    },
+    "/bet/{Bet_id}": {
+      "parameters": [
+        {
+          "name": "Bet_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed bet from given id",
+        "description": "*Try it out* and introduce a bet id you want to see; then, hit *Execute* button to show the desired bet from your database. In *Code* section you will see the bet (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "get_bet_controller",
+        "tags": [
+          "Bets"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Deletes a bet from given id",
+        "description": "*Try it out* and introduce a bet id you want to delete; then, hit *Execute* button to delete the desired bet from your database. In *Code* section you will see the deleted bet (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "delete_bet_controller",
+        "tags": [
+          "Bets"
+        ]
+      }
+    },
+    "/client/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed list of clients",
+        "description": "*Try it out* and hit *Execute* button. In *Code* section you will see a list of clients stored in your database (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "get_client_list_controller",
+        "tags": [
+          "Clients"
+        ]
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Creates a new client from entry data",
+        "description": "*Try it out* and introduce some values in fields below; then, hit *Execute* button to create a new client in your database. In *Code* section you will see your new client (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "post_client_list_controller",
+        "parameters": [
+          {
+            "name": "Username",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "CIF",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "E-mail",
+            "in": "formData",
+            "type": "string",
+            "format": "email",
+            "required": true
+          },
+          {
+            "name": "Password",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "Image",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Clients"
+        ]
+      }
+    },
+    "/client/Client/{CIF}": {
+      "parameters": [
+        {
+          "name": "CIF",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed client from given CIF",
+        "operationId": "get_client_controller",
+        "tags": [
+          "Clients"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Deletes a client from given CIF",
+        "description": "*Try it out* and introduce a client id you want to delete; then, hit *Execute* button to delete the desired client from your database. In *Code* section you will see the deleted client (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "delete_client_controller",
+        "tags": [
+          "Clients"
+        ]
+      }
+    },
+    "/client/{Client_id}": {
+      "parameters": [
+        {
+          "name": "Client_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Updates a client with entry data and given id",
+        "description": "*Try it out* and introduce the client data and client id you want to modify; then, hit *Execute* button to apply your changes. In *Code* section you will see the modified client (*Code*) and a code for a succeded or failed operation.",
+        "operationId": "put_client_controller",
+        "parameters": [
+          {
+            "name": "Username",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "CIF",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "E-mail",
+            "in": "formData",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "Password",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Cash",
+            "in": "formData",
+            "type": "number"
+          },
+          {
+            "name": "Image",
+            "in": "formData",
+            "type": "file"
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Clients"
+        ]
+      }
+    },
+    "/horse/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed list of horses",
+        "description": "*Try it out* and hit *Execute* button. In *Code* section you will see a list of horses stored in your database (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "get_horse_list_controller",
+        "tags": [
+          "Horses"
+        ]
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Creates a new horse from entry data",
+        "description": "*Try it out* and introduce some values in fields below; then, hit *Execute* button to create a new horse in your database. In *Code* section you will see your new horse (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "post_horse_list_controller",
+        "parameters": [
+          {
+            "name": "EquineID",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "Name",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "Breed",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "Age",
+            "in": "formData",
+            "type": "number",
+            "required": true,
+            "description": "Introduce age in months"
+          },
+          {
+            "name": "Image",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "Stud Name",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "If horse´s stud is already registered, just fill Stud Name field, otherwise, fill all fields"
+          },
+          {
+            "name": "Stud Location",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Stud E-mail",
+            "in": "formData",
+            "type": "string",
+            "format": "email"
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Horses"
+        ]
+      }
+    },
+    "/horse/Horse/{EquineID}": {
+      "parameters": [
+        {
+          "name": "EquineID",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed horse from given EquineID",
+        "operationId": "get_horse_controller",
+        "tags": [
+          "Horses"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Deletes a run from given EquineID",
+        "description": "*Try it out* and introduce a horse id you want to delete; then, hit *Execute* button to delete the desired horse from your database. In *Code* section you will see the deleted horse (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "delete_horse_controller",
+        "tags": [
+          "Horses"
+        ]
+      }
+    },
+    "/horse/{Horse_id}": {
+      "parameters": [
+        {
+          "name": "Horse_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Updates a horse with entry data and given id",
+        "description": "*Try it out* and introduce the horse data and stud id you want to modify; then, hit *Execute* button to apply your changes. In *Code* section you will see the modified horse (*Code*) and a code for a succeded or failed operation.",
+        "operationId": "put_horse_controller",
+        "parameters": [
+          {
+            "name": "EquineID",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Name",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Breed",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Age",
+            "in": "formData",
+            "type": "number",
+            "description": "Introduce age in months"
+          },
+          {
+            "name": "Image",
+            "in": "formData",
+            "type": "file"
+          },
+          {
+            "name": "New Stud (name)",
+            "in": "formData",
+            "type": "string"
+          }
+        ],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Horses"
+        ]
+      }
+    },
+    "/role/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed list of roles",
+        "description": "*Try it out* and hit *Execute* button. In *Code* section you will see a list of roles stored in your database (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "get_role_list_controller",
+        "tags": [
+          "Roles"
+        ]
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Creates a new role from entry data",
+        "description": "*Try it out* and introduce some values in fields below; then, hit *Execute* button to create a new role in your database. In *Code* section you will see your new role (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "post_role_list_controller",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Roles"
+        ]
+      }
+    },
+    "/role/Role/{Role_Name}": {
+      "parameters": [
+        {
+          "name": "Role_Name",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed role from given Role_Name",
+        "operationId": "get_role_controller",
+        "tags": [
+          "Roles"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Deletes a role from given Role_Name",
+        "description": "*Try it out* and introduce a role id you want to delete; then, hit *Execute* button to delete the desired role from your database. In *Code* section you will see the deleted role (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "delete_role_controller",
+        "tags": [
+          "Roles"
+        ]
+      }
+    },
+    "/role/{Role_id}": {
+      "parameters": [
+        {
+          "name": "Role_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Updates a role with entry data and given id",
+        "description": "*Try it out* and introduce the role data and role id you want to modify; then, hit *Execute* button to apply your changes. In *Code* section you will see the modified role (*Code*) and a code for a succeded or failed operation.",
+        "operationId": "put_role_controller",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Roles"
+        ]
+      }
+    },
+    "/run/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed list of runs",
+        "description": "*Try it out* and hit *Execute* button. In *Code* section you will see a list of runs stored in your database (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "get_run_list_controller",
+        "tags": [
+          "Runs"
+        ]
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Creates a new run from entry data",
+        "description": "*Try it out* and introduce some values in fields below; then, hit *Execute* button to create a new run in your database. In *Code* section you will see your new run (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "post_run_list_controller",
+        "parameters": [
+          {
+            "name": "Tag",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "Date",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "Introduce date in proper format: DD/MM/YYYY"
+          },
+          {
+            "name": "Time",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "Introduce time in proper format: HH:MM"
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Runs"
+        ]
+      }
+    },
+    "/run/Run/{Tag}": {
+      "parameters": [
+        {
+          "name": "Tag",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed run from given Tag",
+        "operationId": "get_run_controller",
+        "tags": [
+          "Runs"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Deletes a run from given Tag",
+        "description": "*Try it out* and introduce a run id you want to delete; then, hit *Execute* button to delete the desired run from your database. In *Code* section you will see the deleted run (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "delete_run_controller",
+        "tags": [
+          "Runs"
+        ]
+      }
+    },
+    "/run/{Run_id}": {
+      "parameters": [
+        {
+          "name": "Run_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Modify a run with entry data and given id",
+        "description": "*Try it out* and introduce the run data and run id you want to modify; then, hit *Execute* button to apply your changes. In *Code* section you will see the modified run (*Code*) and a code for a succeded or failed operation.",
+        "operationId": "put_run_controller",
+        "parameters": [
+          {
+            "name": "Tag",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Date",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Time",
+            "in": "formData",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "Add Horse (equineID)",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Remove Horse (equineID)",
+            "in": "formData",
+            "type": "string"
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Runs"
+        ]
+      }
+    },
+    "/run_horse/": {
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Update horses final position for a given run tag",
+        "operationId": "put_runs__horses_list_controller",
+        "parameters": [
+          {
+            "name": "Run Tag",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "Horse(equineID)",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "Position",
+            "in": "formData",
+            "type": "integer",
+            "required": true,
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Runs_Horses"
+        ]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed list of runs with registered horses along with their positions",
+        "operationId": "get_runs__horses_list_controller",
+        "tags": [
+          "Runs_Horses"
+        ]
+      }
+    },
+    "/run_horse/{RunTag}": {
+      "parameters": [
+        {
+          "name": "RunTag",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed run with registered horses along with their positions",
+        "operationId": "get_runs__horses_controller",
+        "tags": [
+          "Runs_Horses"
+        ]
+      }
+    },
+    "/stud/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed list of studs",
+        "description": "*Try it out* and hit *Execute* button. In *Code* section you will see a list of studs stored in your database (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "get_stud_list_controller",
+        "tags": [
+          "Studs"
+        ]
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Creates a new stud from entry data",
+        "description": "*Try it out* and introduce some values in fields below; then, hit *Execute* button to create a new stud in your database. In *Code* section you will see your new stud (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "post_stud_list_controller",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "Location",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "E-mail",
+            "in": "formData",
+            "type": "string",
+            "format": "email",
+            "required": true
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Studs"
+        ]
+      }
+    },
+    "/stud/{Stud_id}": {
+      "parameters": [
+        {
+          "name": "Stud_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Updates a stud with entry data and given id",
+        "description": "*Try it out* and introduce the stud data and stud id you want to modify; then, hit *Execute* button to apply your changes. In *Code* section you will see the modified stud (*Code*) and a code for a succeded or failed operation.",
+        "operationId": "put_stud_controller",
+        "parameters": [
+          {
+            "name": "Name",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Location",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "E-mail",
+            "in": "formData",
+            "type": "string",
+            "format": "email"
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Studs"
+        ]
+      },
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed stud from given id",
+        "operationId": "get_stud_controller",
+        "tags": [
+          "Studs"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Deletes a stud from given id",
+        "description": "*Try it out* and introduce a stud id you want to delete; then, hit *Execute* button to delete the desired stud from your database. In *Code* section you will see the deleted stud (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "delete_stud_controller",
+        "tags": [
+          "Studs"
+        ]
+      }
+    },
+    "/user/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed list of users",
+        "description": "*Try it out* and hit *Execute* button. In *Code* section you will see a list of users stored in your database (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "get_user_list_controller",
+        "tags": [
+          "Users"
+        ]
+      },
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Creates a new user from entry data",
+        "description": "*Try it out* and introduce some values in fields below; then, hit *Execute* button to create a new user in your database. In *Code* section you will see your new user (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "post_user_list_controller",
+        "parameters": [
+          {
+            "name": "Username",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "E-mail",
+            "in": "formData",
+            "type": "string",
+            "format": "email",
+            "required": true
+          },
+          {
+            "name": "Password",
+            "in": "formData",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "Add Role",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "enum": [
+              "admin",
+              "client"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/user/User/{Username}": {
+      "parameters": [
+        {
+          "name": "Username",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Shows a detailed user from given Username",
+        "operationId": "get_user_controller",
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Deletes an user from given Username",
+        "description": "*Try it out* and introduce a user id you want to delete; then, hit *Execute* button to delete the desired user from your database. In *Code* section you will see the deleted user (*Response body*) and a code for a succeded or failed operation.",
+        "operationId": "delete_user_controller",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/user/{User_id}": {
+      "parameters": [
+        {
+          "name": "User_id",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "put": {
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "summary": "Updates a user with entry data and given id",
+        "description": "*Try it out* and introduce the user data and user id you want to modify; then, hit *Execute* button to apply your changes. In *Code* section you will see the modified user (*Code*) and a code for a succeded or failed operation.",
+        "operationId": "put_user_controller",
+        "parameters": [
+          {
+            "name": "Username",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "E-mail",
+            "in": "formData",
+            "type": "string",
+            "format": "email"
+          },
+          {
+            "name": "Password",
+            "in": "formData",
+            "type": "string"
+          },
+          {
+            "name": "Add Role",
+            "in": "formData",
+            "type": "string",
+            "enum": [
+              "admin",
+              "client"
+            ]
+          },
+          {
+            "name": "Delete Role",
+            "in": "formData",
+            "type": "string",
+            "enum": [
+              "admin",
+              "client"
+            ]
+          }
+        ],
+        "consumes": [
+          "application/x-www-form-urlencoded",
+          "multipart/form-data"
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Winning Horse",
+    "version": "1.0.0",
+    "description": "This is the panel for admins of Winning Horse server.  For this panel, you must use the `Apikey` to authorize your credentials due to use any of methods below."
+  },
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "Authentication": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "Authorization",
+      "description": "Introduce your ApiKey."
+    }
+  },
+  "security": [
+    {
+      "Authentication": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Roles",
+      "description": "Roles management"
+    },
+    {
+      "name": "Users",
+      "description": "Users management"
+    },
+    {
+      "name": "Clients",
+      "description": "Clients management"
+    },
+    {
+      "name": "Bets",
+      "description": "Bets management"
+    },
+    {
+      "name": "Studs",
+      "description": "Studs management"
+    },
+    {
+      "name": "Horses",
+      "description": "Horses management"
+    },
+    {
+      "name": "Runs",
+      "description": "Runs management"
+    },
+    {
+      "name": "Runs_Horses",
+      "description": "Runs_Horses management"
+    }
+  ],
+  "responses": {
+    "ParseError": {
+      "description": "When a mask can't be parsed"
+    },
+    "MaskError": {
+      "description": "When any error occurs on mask"
+    }
+  }
+}

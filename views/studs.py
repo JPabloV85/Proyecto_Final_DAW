@@ -1,7 +1,6 @@
-from functools import wraps
 from flask import request
 from flask_restx import Resource, Namespace, inputs
-from config import API_KEY
+from config import apiKey_required
 from model import Stud, db
 from schema import StudSchema
 
@@ -20,38 +19,22 @@ parserPUT.add_argument('Location', type=str, location='form', nullable=False)
 parserPUT.add_argument('E-mail', type=inputs.email(), location='form', nullable=False)
 
 
-# custom decorator
-def apiKey_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        apiKey = None
-        if 'Authorization' in request.headers:
-            apiKey = request.headers['Authorization']
-        if not apiKey:
-            return 'ApiKey is missing. You have to introduce it in Authorize section at the top of this page.', 401
-        if apiKey != API_KEY:
-            return 'Your ApiKey is wrong!', 401
-        return f(*args, **kwargs)
-
-    return decorated
-
-
 # Admin endopoints
-@api_stud.route("/<stud_id>")
+@api_stud.route("/<Stud_id>")
 class StudController(Resource):
     @apiKey_required
-    def get(self, stud_id):
+    def get(self, Stud_id):
         """Shows a detailed stud from given id."""
-        stud = Stud.query.get_or_404(stud_id)
+        stud = Stud.query.get_or_404(Stud_id)
         return StudSchema().dump(stud), 200
 
     @apiKey_required
     @api_stud.doc(description='*Try it out* and introduce a stud id you want to delete; then, hit *Execute* button to '
                               'delete the desired stud from your database. In *Code* section you will see the '
                               'deleted stud (*Response body*) and a code for a succeded or failed operation.')
-    def delete(self, stud_id):
+    def delete(self, Stud_id):
         """Deletes a stud from given id."""
-        stud = Stud.query.get_or_404(stud_id)
+        stud = Stud.query.get_or_404(Stud_id)
         db.session.delete(stud)
         db.session.commit()
         return StudSchema().dump(stud), 200
@@ -61,9 +44,9 @@ class StudController(Resource):
     @api_stud.doc(description='*Try it out* and introduce the stud data and stud id you want to modify; then, '
                               'hit *Execute* button to apply your changes. In *Code* section you will see the '
                               'modified stud (*Code*) and a code for a succeded or failed operation.')
-    def put(self, stud_id):
+    def put(self, Stud_id):
         """Updates a stud with entry data and given id."""
-        stud = Stud.query.get_or_404(stud_id)
+        stud = Stud.query.get_or_404(Stud_id)
 
         if request.form.get("Name"): stud.name = request.form.get("Name")
         if request.form.get("Location"): stud.location = request.form.get("Location")

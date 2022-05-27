@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Swagger UI</title>
+    <link rel="stylesheet" type="text/css" href="../static/css/swagger-ui.css" />
+    <link rel="stylesheet" type="text/css" href="../static/css/swagger.css" />
+    <link rel="icon" type="image/png" href="../static/swaggerImg/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="../static/swaggerImg/favicon-16x16.png" sizes="16x16" />
+    <script type="application/javascript">
+        const HideCurlPlugin = () => {
+            return {
+              wrapComponents: {
+                curl: () => () => null
+              }
+            }
+        }
+        const HideTopbarPlugin = () => {
+            return {
+              components: {
+                Topbar: () => () => null
+              }
+            }
+        }
+        const token = "{{ token }}";
+        window.addEventListener('load',
+          function() {
+            if (token === ""){
+                alert("You are not logged in!");
+                location.href = "/";
+            } else {
+                alert("You are logged in!");
+            }
+          }, false);
+    </script>
+  </head>
+
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="../static/js/swagger-ui-bundle.js" charset="UTF-8"> </script>
+    <script src="../static/js/swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
+    <script src="../static/js/swagger-initializer.js" charset="UTF-8"> </script>
+  </body>
+</html>
