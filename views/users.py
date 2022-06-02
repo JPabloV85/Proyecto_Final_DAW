@@ -77,9 +77,12 @@ class ClientListController(Resource):
             clientID = getClientIDFromToken(request)
             client = Client.query.get_or_404(clientID)
 
+            guard = flask_praetorian.Praetorian()
+            guard.init_app(current_app, User)
             user = User.query.get_or_404(client.user_id)
             user.username = request.form.get("username")
             user.email = request.form.get("email")
+            user.hashed_password = guard.hash_password(request.form.get("password"))
 
             newImage = request.files['image']
             if newImage:
@@ -88,8 +91,6 @@ class ClientListController(Resource):
                 filename = str(uuid.uuid4().hex) + "_" + secure_filename(newImage.filename)
                 newImage.save(folder + filename)
                 client.image = filename
-
-            client.cif = request.form.get("nif")
 
             db.session.commit()
             return ClientSchema().dump(client), 201

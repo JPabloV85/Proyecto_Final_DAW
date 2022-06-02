@@ -77,7 +77,7 @@ class ClientController(Resource):
         client = Client.query.get_or_404(idClient)
         clientData = ClientSchema().dump(client)
 
-        wonBets = Bet.query.filter(Bet.client_id == idClient, Bet.win.is_(True)).count()
+        wonBets = Bet.query.filter(Bet.client_id == idClient, Bet.win == True).count()
         clientData['wonBets'] = wonBets
 
         statement = text("""

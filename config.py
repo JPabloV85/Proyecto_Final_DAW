@@ -12,7 +12,7 @@ API_KEY = 'alberti'
 
 
 ###
-# custom decorator
+# custom decorators
 def apiKey_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -29,7 +29,7 @@ def apiKey_required(f):
 
 
 ###
-# keep declaration order on jason dicts
+# keep declaration order on json dicts
 JSON_SORT_KEYS = False
 
 ###

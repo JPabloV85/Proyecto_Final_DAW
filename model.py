@@ -20,93 +20,193 @@ def init_db(app, guard, testing=False):
 
 
 def seed_db(app, guard):
-    """
-    Seeds database with test data
-
-    :param app: flask app
-    :param guard: praetorian object for password hashing
-    """
     with app.app_context():
         roles = [
             Role(name="admin"),
             Role(name="client")
         ]
         users = [
-            User(username="juan", email="juan@a.a",
-                 hashed_password=guard.hash_password("pestillo"),
-                 roles=[roles[1]]),
-            User(username="paco", email="paco@a.a",
-                 hashed_password=guard.hash_password("pestillo"),
+            User(username="pablo", email="pablo@a.a",
+                 hashed_password=guard.hash_password("alberti"),
                  roles=[roles[1]]),
             User(username="maria", email="maria@a.a",
-                 hashed_password=guard.hash_password("pestillo"),
+                 hashed_password=guard.hash_password("alberti"),
                  roles=[roles[1]]),
             User(username="pedro", email="pedro@a.a",
-                 hashed_password=guard.hash_password("pestillo"),
+                 hashed_password=guard.hash_password("alberti"),
                  roles=[roles[0]])
         ]
+        clients = [
+            Client(cif="58744698C", cash=460, image="mifoto.jpg", user=users[0]),
+            Client(cif="33799746I", cash=500, user=users[1])
+        ]
         studs = [
-            Stud(name="yeguada1", location="Cadiz", email="sfsofi@svsd.com"),
-            Stud(name="yeguada2", location="Barcelona", email="ntytygfi@svsd.com"),
-            Stud(name="yeguada3", location="Madrid", email="wtgwergf@svsd.com")
+            Stud(name="El Chaparral", location="Cádiz", email="sfsofi@svsd.com"),
+            Stud(name="Torreluna", location="Sevilla", email="ntytygfi@svsd.com"),
+            Stud(name="Hnos. Díaz", location="Madrid", email="wtgwergf@svsd.com")
         ]
         horses = [
-            Horse(equineID="03IT824", name="caballo1", breed="Appaloosa", age=8, stud=studs[0]),
-            Horse(equineID="52ES456", name="caballo2", breed="American Quarter Horse", age=7, stud=studs[1]),
-            Horse(equineID="42US957", name="caballo3", breed="Thoroughbred", age=10, stud=studs[2])
+            Horse(equineID="A12345", name="Rocinante", breed="Appaloosa", age=8, image='caballo1.jpg', win_ratio=100,
+                  stud=studs[0]),
+            Horse(equineID="A54321", name="Trueno", breed="American Quarter Horse", age=7, image='caballo2.jpg',
+                  win_ratio=57, stud=studs[1]),
+            Horse(equineID="B12345", name="Flash", breed="Thoroughbred", age=10, image='caballo3.jpg', win_ratio=16,
+                  stud=studs[2]),
+            Horse(equineID="B54321", name="Babieca", breed="Appaloosa", age=8, image='caballo4.jpg', win_ratio=22,
+                  stud=studs[0]),
+            Horse(equineID="C12345", name="Duque", breed="American Quarter Horse", age=7, image='caballo5.jpg', win_ratio=0,
+                  stud=studs[1]),
+            Horse(equineID="C54321", name="Gamora", breed="Thoroughbred", age=10, image='caballo6.jpg', win_ratio=22,
+                  stud=studs[2]),
+            Horse(equineID="D12345", name="Marquesa", breed="Appaloosa", age=8, image='caballo7.jpg', win_ratio=0,
+                  stud=studs[0]),
+            Horse(equineID="D54321", name="Furia", breed="American Quarter Horse", age=7, image='caballo8.jpg', win_ratio=0,
+                  stud=studs[1]),
+            Horse(equineID="E12345", name="Pegasus", breed="Thoroughbred", age=10, image='caballo9.jpg', win_ratio=0,
+                  stud=studs[2]),
+            Horse(equineID="E54321", name="Bucéfalo", breed="Appaloosa", age=8, image='caballo10.jpg', win_ratio=0,
+                  stud=studs[0])
         ]
         runs = [
-            Run(tag="20JAN-01", date="20/01/2022", time="13.00"),
-            Run(tag="27MAY-12", date="27/05/2022", time="17.00", horses=[horses[1], horses[2]]),
-            Run(tag="27MAY-11", date="27/05/2022", time="10.00", horses=[horses[0], horses[1]]),
-            Run(tag="28MAY-06", date="28/05/2022", time="14.00", horses=[horses[0]]),
-            Run(tag="28MAY-09", date="28/05/2022", time="18.00", horses=[horses[0], horses[2]])
+            Run(tag="08JUN-01", date="08/06/2022", time="16:00"),
+            Run(tag="08JUN-02", date="08/06/2022", time="17:00"),
+            Run(tag="08JUN-03", date="08/06/2022", time="18:00"),
+            Run(tag="08JUN-04", date="08/06/2022", time="19:00"),
+            Run(tag="08JUN-05", date="08/06/2022", time="20:00"),
+            Run(tag="09JUN-01", date="09/06/2022", time="16:00"),
+            Run(tag="09JUN-02", date="09/06/2022", time="17:00"),
+            Run(tag="09JUN-03", date="09/06/2022", time="18:00"),
+            Run(tag="09JUN-04", date="09/06/2022", time="19:00"),
+            Run(tag="09JUN-05", date="09/06/2022", time="20:00"),
+            Run(tag="10JUN-01", date="10/06/2022", time="16:00"),
+            Run(tag="10JUN-02", date="10/06/2022", time="17:00"),
+            Run(tag="10JUN-03", date="10/06/2022", time="18:00"),
+            Run(tag="10JUN-04", date="10/06/2022", time="19:00"),
+            Run(tag="10JUN-05", date="10/06/2022", time="20:00"),
+            Run(tag="20JUN-01", date="20/06/2022", time="16:00",
+                horses=[horses[2], horses[5], horses[7], horses[3], horses[9]]),
+            Run(tag="20JUN-02", date="20/06/2022", time="17:00",
+                horses=[horses[1], horses[3], horses[5], horses[7], horses[9]]),
+            Run(tag="20JUN-03", date="20/06/2022", time="18:00",
+                horses=[horses[0], horses[2], horses[4], horses[6], horses[8]]),
+            Run(tag="20JUN-04", date="20/06/2022", time="19:00",
+                horses=[horses[1], horses[2], horses[5], horses[8], horses[9]]),
+            Run(tag="20JUN-05", date="20/06/2022", time="20:00",
+                horses=[horses[0], horses[3], horses[4], horses[6], horses[7]]),
+            Run(tag="21JUN-01", date="21/06/2022", time="16:00",
+                horses=[horses[0], horses[1], horses[4], horses[7], horses[8]]),
+            Run(tag="21JUN-02", date="21/06/2022", time="17:00",
+                horses=[horses[2], horses[3], horses[5], horses[6], horses[9]]),
+            Run(tag="21JUN-03", date="21/06/2022", time="18:00",
+                horses=[horses[0], horses[1], horses[3], horses[4], horses[7]]),
+            Run(tag="21JUN-04", date="21/06/2022", time="19:00",
+                horses=[horses[2], horses[5], horses[6], horses[8], horses[9]]),
+            Run(tag="21JUN-05", date="21/06/2022", time="20:00",
+                horses=[horses[0], horses[1], horses[2], horses[8], horses[9]])
         ]
-        clients = [
-            Client(cif="58744698C", cash=500, user=users[0]),
-            Client(cif="33799746I", cash=400, user=users[1]),
-            Client(cif="77418462L", cash=300, user=users[2])
+
+        for user in users: db.session.add(user)
+        for client in clients: db.session.add(client)
+        for stud in studs: db.session.add(stud)
+        for horse in horses: db.session.add(horse)
+        for run in runs: db.session.add(run)
+        db.session.commit()
+
+        runs_horses = [
+            Runs_Horses(run_id=runs[0].id, horse_id=horses[3].id, final_position=1),
+            Runs_Horses(run_id=runs[0].id, horse_id=horses[4].id, final_position=2),
+            Runs_Horses(run_id=runs[0].id, horse_id=horses[5].id, final_position=3),
+            Runs_Horses(run_id=runs[0].id, horse_id=horses[6].id, final_position=4),
+            Runs_Horses(run_id=runs[0].id, horse_id=horses[7].id, final_position=5),
+            Runs_Horses(run_id=runs[1].id, horse_id=horses[1].id, final_position=1),
+            Runs_Horses(run_id=runs[1].id, horse_id=horses[2].id, final_position=2),
+            Runs_Horses(run_id=runs[1].id, horse_id=horses[3].id, final_position=3),
+            Runs_Horses(run_id=runs[1].id, horse_id=horses[6].id, final_position=4),
+            Runs_Horses(run_id=runs[1].id, horse_id=horses[8].id, final_position=5),
+            Runs_Horses(run_id=runs[2].id, horse_id=horses[1].id, final_position=1),
+            Runs_Horses(run_id=runs[2].id, horse_id=horses[3].id, final_position=2),
+            Runs_Horses(run_id=runs[2].id, horse_id=horses[4].id, final_position=3),
+            Runs_Horses(run_id=runs[2].id, horse_id=horses[6].id, final_position=4),
+            Runs_Horses(run_id=runs[2].id, horse_id=horses[9].id, final_position=5),
+            Runs_Horses(run_id=runs[3].id, horse_id=horses[5].id, final_position=1),
+            Runs_Horses(run_id=runs[3].id, horse_id=horses[6].id, final_position=2),
+            Runs_Horses(run_id=runs[3].id, horse_id=horses[7].id, final_position=3),
+            Runs_Horses(run_id=runs[3].id, horse_id=horses[8].id, final_position=4),
+            Runs_Horses(run_id=runs[3].id, horse_id=horses[9].id, final_position=5),
+            Runs_Horses(run_id=runs[4].id, horse_id=horses[0].id, final_position=1),
+            Runs_Horses(run_id=runs[4].id, horse_id=horses[1].id, final_position=2),
+            Runs_Horses(run_id=runs[4].id, horse_id=horses[2].id, final_position=3),
+            Runs_Horses(run_id=runs[4].id, horse_id=horses[3].id, final_position=4),
+            Runs_Horses(run_id=runs[4].id, horse_id=horses[4].id, final_position=5),
+            Runs_Horses(run_id=runs[5].id, horse_id=horses[0].id, final_position=1),
+            Runs_Horses(run_id=runs[5].id, horse_id=horses[1].id, final_position=2),
+            Runs_Horses(run_id=runs[5].id, horse_id=horses[2].id, final_position=3),
+            Runs_Horses(run_id=runs[5].id, horse_id=horses[3].id, final_position=4),
+            Runs_Horses(run_id=runs[5].id, horse_id=horses[4].id, final_position=5),
+            Runs_Horses(run_id=runs[6].id, horse_id=horses[5].id, final_position=1),
+            Runs_Horses(run_id=runs[6].id, horse_id=horses[6].id, final_position=2),
+            Runs_Horses(run_id=runs[6].id, horse_id=horses[7].id, final_position=3),
+            Runs_Horses(run_id=runs[6].id, horse_id=horses[8].id, final_position=4),
+            Runs_Horses(run_id=runs[6].id, horse_id=horses[9].id, final_position=5),
+            Runs_Horses(run_id=runs[7].id, horse_id=horses[0].id, final_position=1),
+            Runs_Horses(run_id=runs[7].id, horse_id=horses[2].id, final_position=2),
+            Runs_Horses(run_id=runs[7].id, horse_id=horses[4].id, final_position=3),
+            Runs_Horses(run_id=runs[7].id, horse_id=horses[5].id, final_position=4),
+            Runs_Horses(run_id=runs[7].id, horse_id=horses[7].id, final_position=5),
+            Runs_Horses(run_id=runs[8].id, horse_id=horses[1].id, final_position=1),
+            Runs_Horses(run_id=runs[8].id, horse_id=horses[3].id, final_position=2),
+            Runs_Horses(run_id=runs[8].id, horse_id=horses[6].id, final_position=3),
+            Runs_Horses(run_id=runs[8].id, horse_id=horses[8].id, final_position=4),
+            Runs_Horses(run_id=runs[8].id, horse_id=horses[9].id, final_position=5),
+            Runs_Horses(run_id=runs[9].id, horse_id=horses[0].id, final_position=1),
+            Runs_Horses(run_id=runs[9].id, horse_id=horses[1].id, final_position=2),
+            Runs_Horses(run_id=runs[9].id, horse_id=horses[5].id, final_position=3),
+            Runs_Horses(run_id=runs[9].id, horse_id=horses[6].id, final_position=4),
+            Runs_Horses(run_id=runs[9].id, horse_id=horses[9].id, final_position=5),
+            Runs_Horses(run_id=runs[10].id, horse_id=horses[2].id, final_position=1),
+            Runs_Horses(run_id=runs[10].id, horse_id=horses[3].id, final_position=2),
+            Runs_Horses(run_id=runs[10].id, horse_id=horses[4].id, final_position=3),
+            Runs_Horses(run_id=runs[10].id, horse_id=horses[7].id, final_position=4),
+            Runs_Horses(run_id=runs[10].id, horse_id=horses[8].id, final_position=5),
+            Runs_Horses(run_id=runs[11].id, horse_id=horses[0].id, final_position=1),
+            Runs_Horses(run_id=runs[11].id, horse_id=horses[4].id, final_position=2),
+            Runs_Horses(run_id=runs[11].id, horse_id=horses[5].id, final_position=3),
+            Runs_Horses(run_id=runs[11].id, horse_id=horses[7].id, final_position=4),
+            Runs_Horses(run_id=runs[11].id, horse_id=horses[9].id, final_position=5),
+            Runs_Horses(run_id=runs[12].id, horse_id=horses[3].id, final_position=1),
+            Runs_Horses(run_id=runs[12].id, horse_id=horses[4].id, final_position=2),
+            Runs_Horses(run_id=runs[12].id, horse_id=horses[7].id, final_position=3),
+            Runs_Horses(run_id=runs[12].id, horse_id=horses[8].id, final_position=4),
+            Runs_Horses(run_id=runs[12].id, horse_id=horses[9].id, final_position=5),
+            Runs_Horses(run_id=runs[13].id, horse_id=horses[1].id, final_position=1),
+            Runs_Horses(run_id=runs[13].id, horse_id=horses[3].id, final_position=2),
+            Runs_Horses(run_id=runs[13].id, horse_id=horses[6].id, final_position=3),
+            Runs_Horses(run_id=runs[13].id, horse_id=horses[7].id, final_position=4),
+            Runs_Horses(run_id=runs[13].id, horse_id=horses[8].id, final_position=5),
+            Runs_Horses(run_id=runs[14].id, horse_id=horses[0].id, final_position=1),
+            Runs_Horses(run_id=runs[14].id, horse_id=horses[2].id, final_position=2),
+            Runs_Horses(run_id=runs[14].id, horse_id=horses[4].id, final_position=3),
+            Runs_Horses(run_id=runs[14].id, horse_id=horses[5].id, final_position=4),
+            Runs_Horses(run_id=runs[14].id, horse_id=horses[9].id, final_position=5)
         ]
+        for run_horse in runs_horses: db.session.add(run_horse)
+        db.session.commit()
+
         bets = [
-            Bet(client_id=1, run_horse_id=1, payment_amount=30.7, bet_position=2, bet_amount=10.5, win=True),
-            Bet(client_id=1, run_horse_id=2, bet_position=1, bet_amount=20),
-            Bet(client_id=1, run_horse_id=4, payment_amount=50, bet_position=2, bet_amount=30.5, win=False),
-            Bet(client_id=1, run_horse_id=5, payment_amount=10.5, bet_position=1, bet_amount=5, win=True)
+            Bet(client_id=1, run_horse_id=runs_horses[1].id, payment_amount=30.7, bet_position=2, bet_amount=10, win=True),
+            Bet(client_id=1, run_horse_id=runs_horses[5].id, payment_amount=50.2, bet_position=1, bet_amount=20, win=True),
+            Bet(client_id=1, run_horse_id=runs_horses[7].id, payment_amount=15.3, bet_position=3, bet_amount=5, win=False),
+            Bet(client_id=1, run_horse_id=runs_horses[50].id, payment_amount=500, bet_position=1, bet_amount=5, win=False)
         ]
-
-        for user in users:
-            db.session.add(user)
-        for stud in studs:
-            db.session.add(stud)
-        for horse in horses:
-            db.session.add(horse)
-        for run in runs:
-            db.session.add(run)
-        for client in clients:
-            db.session.add(client)
-        for bet in bets:
-            db.session.add(bet)
-
+        for bet in bets: db.session.add(bet)
         db.session.commit()
 
 
-# tables for N:M relationship
+# table for N:M relationship
 roles_users = db.Table('roles_users',
                        db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
                        db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
                        )
-"""
-bets = db.Table('bets',
-                db.Column('id', db.Integer, primary_key=True),
-                db.Column('run_horse_id', db.Integer, db.ForeignKey('runs_horses.id')),
-                db.Column('client_id', db.Integer, db.ForeignKey('client.id')),
-                db.Column('bet_position', db.Integer, nullable=False, default=0),
-                db.Column('bet_amount', db.Float, nullable=False, default=0),
-                db.Column('win', db.Boolean),
-                db.Column('benefit_ratio', db.Float),
-                db.Column('payment_amount', db.Float)
-                )
-"""
 
 
 # classes for model entities

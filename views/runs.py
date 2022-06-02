@@ -1,4 +1,5 @@
 import flask_praetorian
+from datetime import datetime
 from flask import request, jsonify
 from flask_restx import Resource, Namespace, inputs
 from sqlalchemy import text
@@ -30,16 +31,21 @@ parserPUT.add_argument('Remove Horse (equineID)', type=str, location='form', nul
 class RunListController(Resource):
     @flask_praetorian.auth_required
     def get(self):
+        today = datetime.now().strftime("%d/%m/%Y")
+        now = datetime.now().strftime("%H:%M")
+        today_now = today + " " + now
+
         statement = text("""
-                            select * from (select run.id, run.tag, run.date, run.time, count(rh.horse_id) as horses
-                                            from run
-                                            join runs_horses rh on run.id = rh.run_id
+                            select * from (select r.id, r.tag, r.date, r.time, count(rh.horse_id) as horses
+                                            from run r
+                                            join runs_horses rh on r.id = rh.run_id
+                                            where r.date || " " || r.time  > :today_now
                                             group by rh.run_id
-                                            order by run.date, run.time
+                                            order by r.date, r.time
                                             )
-                            where horses > 1
+                            where horses = 5
                         """)
-        result = db.session.execute(statement)
+        result = db.session.execute(statement, {"today_now": today_now})
         return jsonify([{'id': r['id'], 'race_tag': r['tag'], 'date': r['date'], 'time': r['time']} for r in result])
 
 
