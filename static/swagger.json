@@ -619,13 +619,15 @@
           {
             "name": "Date",
             "in": "formData",
-            "type": "string"
+            "type": "string",
+            "description": "Introduce date in proper format: DD/MM/YYYY"
           },
           {
             "name": "Time",
             "in": "formData",
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "description": "Introduce time in proper format: HH:MM"
           },
           {
             "name": "Add Horse (equineID)",
@@ -841,7 +843,7 @@
             "description": "Success"
           }
         },
-        "summary": "Deletes a stud from given id",
+        "summary": "Deletes a stud from given id (HORSES FROM THAT STUD WILL BE DELETED TOO)",
         "description": "*Try it out* and introduce a stud id you want to delete; then, hit *Execute* button to delete the desired stud from your database. In *Code* section you will see the deleted stud (*Response body*) and a code for a succeded or failed operation.",
         "operationId": "delete_stud_controller",
         "tags": [

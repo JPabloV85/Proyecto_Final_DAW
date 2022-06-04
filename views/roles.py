@@ -1,4 +1,3 @@
-from functools import wraps
 from flask import request
 from flask_restx import Resource, Namespace
 from config import apiKey_required
@@ -19,7 +18,9 @@ class RoleController(Resource):
     def get(self, Role_Name):
         """Shows a detailed role from given Role_Name."""
         role = Role.query.filter(Role.name == Role_Name).first()
-        return RoleSchema().dump(role), 200
+        if role:
+            return RoleSchema().dump(role), 200
+        return "Role not found", 404
 
     @apiKey_required
     @api_role.doc(description='*Try it out* and introduce a role id you want to delete; then, hit *Execute* button to '
@@ -28,9 +29,11 @@ class RoleController(Resource):
     def delete(self, Role_Name):
         """Deletes a role from given Role_Name."""
         role = Role.query.filter(Role.name == Role_Name).first()
-        db.session.delete(role)
-        db.session.commit()
-        return RoleSchema().dump(role), 200
+        if role:
+            db.session.delete(role)
+            db.session.commit()
+            return RoleSchema().dump(role), 200
+        return "Role not found", 404
 
 
 @api_role.route("/<Role_id>")

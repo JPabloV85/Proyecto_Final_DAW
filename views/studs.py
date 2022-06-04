@@ -33,7 +33,7 @@ class StudController(Resource):
                               'delete the desired stud from your database. In *Code* section you will see the '
                               'deleted stud (*Response body*) and a code for a succeded or failed operation.')
     def delete(self, Stud_id):
-        """Deletes a stud from given id."""
+        """Deletes a stud from given id. (HORSES FROM THAT STUD WILL BE DELETED TOO)"""
         stud = Stud.query.get_or_404(Stud_id)
         db.session.delete(stud)
         db.session.commit()

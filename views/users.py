@@ -82,10 +82,15 @@ class ClientListController(Resource):
             user = User.query.get_or_404(client.user_id)
             user.username = request.form.get("username")
             user.email = request.form.get("email")
-            user.hashed_password = guard.hash_password(request.form.get("password"))
+            if request.form.get("password") == user.hashed_password:
+                user.hashed_password = request.form.get("password")
+            else:
+                user.hashed_password = guard.hash_password(request.form.get("password"))
 
             newImage = request.files['image']
+            print(newImage)
             if newImage:
+                print("hay image")
                 folder = current_app.root_path + "/static/images/"
                 if client.image != "default_user.jpg": os.unlink(os.path.join(folder + client.image))
                 filename = str(uuid.uuid4().hex) + "_" + secure_filename(newImage.filename)
@@ -108,7 +113,9 @@ class UserController(Resource):
     def get(self, Username):
         """Shows a detailed user from given Username."""
         user = User.query.filter(User.username == Username).first()
-        return UserSchema().dump(user), 200
+        if user:
+            return UserSchema().dump(user), 200
+        return "User not found", 404
 
     @apiKey_required
     @api_user.doc(description='*Try it out* and introduce a user id you want to delete; then, hit *Execute* button to '
@@ -117,9 +124,11 @@ class UserController(Resource):
     def delete(self, Username):
         """Deletes an user from given Username."""
         user = User.query.filter(User.username == Username).first()
-        db.session.delete(user)
-        db.session.commit()
-        return UserSchema().dump(user), 200
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            return UserSchema().dump(user), 200
+        return "User not found", 404
 
 
 @api_user.route("/<User_id>")

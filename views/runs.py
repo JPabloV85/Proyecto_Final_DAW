@@ -1,7 +1,8 @@
+import time
 import flask_praetorian
 from datetime import datetime
 from flask import request, jsonify
-from flask_restx import Resource, Namespace, inputs
+from flask_restx import Resource, Namespace
 from sqlalchemy import text
 from config import apiKey_required
 from model import Run, db, Horse
@@ -20,8 +21,8 @@ parserPOST.add_argument('Time', type=str, location='form', required=True, nullab
 # SWAGGER PUT FORM FIELDS
 parserPUT = api_run.parser()
 parserPUT.add_argument('Tag', type=str, location='form', nullable=False)
-parserPUT.add_argument('Date', type=inputs.date("2012-01-01"), location='form', nullable=False)
-parserPUT.add_argument('Time', type=inputs.email(), location='form', nullable=False)
+parserPUT.add_argument('Date', type=str, location='form', nullable=False, help='Introduce date in proper format: DD/MM/YYYY')
+parserPUT.add_argument('Time', type=str, location='form', nullable=False, help='Introduce time in proper format: HH:MM')
 parserPUT.add_argument('Add Horse (equineID)', type=str, location='form', nullable=False)
 parserPUT.add_argument('Remove Horse (equineID)', type=str, location='form', nullable=False)
 
@@ -30,11 +31,11 @@ parserPUT.add_argument('Remove Horse (equineID)', type=str, location='form', nul
 @api_run.route("/available", doc=False)
 class RunListController(Resource):
     @flask_praetorian.auth_required
-    def get(self):
+    def get(self, ):
         today = datetime.now().strftime("%d/%m/%Y")
         now = datetime.now().strftime("%H:%M")
         today_now = today + " " + now
-
+        print(today_now)
         statement = text("""
                             select * from (select r.id, r.tag, r.date, r.time, count(rh.horse_id) as horses
                                             from run r
@@ -56,7 +57,9 @@ class RunController(Resource):
     def get(self, Tag):
         """Shows a detailed run from given Tag."""
         run = Run.query.filter(Run.tag == Tag).first()
-        return RunSchema().dump(run), 200
+        if run:
+            return RunSchema().dump(run), 200
+        return "Run not found", 404
 
     @apiKey_required
     @api_run.doc(description='*Try it out* and introduce a run id you want to delete; then, hit *Execute* button to '
@@ -65,9 +68,11 @@ class RunController(Resource):
     def delete(self, Tag):
         """Deletes a run from given Tag."""
         run = Run.query.filter(Run.tag == Tag).first()
-        db.session.delete(run)
-        db.session.commit()
-        return RunSchema().dump(run), 200
+        if run:
+            db.session.delete(run)
+            db.session.commit()
+            return RunSchema().dump(run), 200
+        return "Run not found", 404
 
 
 @api_run.route("/<Run_id>")
@@ -82,8 +87,20 @@ class RunController(Resource):
         run = Run.query.get_or_404(Run_id)
 
         if request.form.get("Tag"): run.tag = request.form.get("Tag")
-        if request.form.get("Date"): run.date = request.form.get("Date")
-        if request.form.get("Time"): run.time = request.form.get("Time")
+        if request.form.get("Date"):
+            try:
+                datetime.strptime(request.form.get("Date"), '%d/%m/%Y')
+                run.date = request.form.get("Date")
+            except:
+                return "Incorrect date format, should be DD/MM/YYYY", 500
+
+        if request.form.get("Time"):
+            try:
+                time.strptime(request.form.get("Time"), '%H:%M')
+                run.time = request.form.get("Time")
+            except:
+                return "Incorrect time format, should be HH:MM", 500
+
         if request.form.get("Add Horse (equineID)"):
             horse = Horse.query.filter(Horse.equineID == request.form.get("Add Horse (equineID)")).first()
             run.horses.append(horse)
@@ -112,6 +129,17 @@ class RunListController(Resource):
                              'run (*Response body*) and a code for a succeded or failed operation.')
     def post(self):
         """Creates a new run from entry data."""
+
+        try:
+            datetime.strptime(request.form.get("Date"), '%d/%m/%Y')
+        except:
+            return "Incorrect date format, should be DD/MM/YYYY", 500
+
+        try:
+            time.strptime(request.form.get("Time"), '%H:%M')
+        except:
+            return "Incorrect time format, should be HH:MM", 500
+
         runRequest = {
             "tag": request.form.get("Tag"),
             "date": request.form.get("Date"),

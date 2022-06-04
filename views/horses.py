@@ -83,7 +83,9 @@ class HorseController(Resource):
     def get(self, EquineID):
         """Shows a detailed horse from given EquineID."""
         horse = Horse.query.filter(Horse.equineID == EquineID).first()
-        return HorseSchema().dump(horse), 200
+        if horse:
+            return HorseSchema().dump(horse), 200
+        return "Horse not found", 404
 
     @apiKey_required
     @api_horse.doc(
@@ -93,10 +95,12 @@ class HorseController(Resource):
     def delete(self, EquineID):
         """Deletes a run from given EquineID."""
         horse = Horse.query.filter(Horse.equineID == EquineID).first()
-        horseData = HorseSchema().dump(horse)
-        db.session.delete(horse)
-        db.session.commit()
-        return horseData, 200
+        if horse:
+            horseData = HorseSchema().dump(horse)
+            db.session.delete(horse)
+            db.session.commit()
+            return horseData, 200
+        return "Horse not found", 404
 
 
 @api_horse.route("/<Horse_id>")

@@ -1,13 +1,12 @@
 import os
 import uuid
-from functools import wraps
 import flask_praetorian
 from flask import request, jsonify, current_app
 from flask_restx import Resource, Namespace, inputs
 from sqlalchemy import text
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
-from config import API_KEY, apiKey_required
+from config import apiKey_required
 from model import Client, db, User, Bet, Role
 from schema import ClientSchema, UserSchema
 
@@ -109,7 +108,9 @@ class ClientController(Resource):
     def get(self, CIF):
         """Shows a detailed client from given CIF."""
         client = Client.query.filter(Client.cif == CIF).first()
-        return ClientSchema().dump(client), 200
+        if client:
+            return ClientSchema().dump(client), 200
+        return "Client not found", 404
 
     @apiKey_required
     @api_client.doc(description='*Try it out* and introduce a client id you want to delete; then, hit *Execute* '
@@ -119,11 +120,13 @@ class ClientController(Resource):
     def delete(self, CIF):
         """Deletes a client from given CIF."""
         client = Client.query.filter(Client.cif == CIF).first()
-        clientData = ClientSchema().dump(client)
-        user = User.query.filter(User.id == client.user_id).first()
-        db.session.delete(user)
-        db.session.commit()
-        return clientData, 200
+        if client:
+            clientData = ClientSchema().dump(client)
+            user = User.query.filter(User.id == client.user_id).first()
+            db.session.delete(user)
+            db.session.commit()
+            return clientData, 200
+        return "Client not found", 404
 
 
 @api_client.route("/<Client_id>")

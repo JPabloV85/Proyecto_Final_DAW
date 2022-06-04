@@ -68,19 +68,22 @@ class Runs_HorsesController(Resource):
     def get(self, RunTag):
         """Shows a detailed run with registered horses along with their positions."""
         run = RunSchema().dump(Run.query.filter(Run.tag == RunTag).first())
-        statement = text("""
-                        select rh.horse_id, rh.final_position 
-                        from runs_horses rh
-                        where rh.run_id == :runId
-                        order by rh.horse_id asc
-                    """)
-        result = db.session.execute(statement, {"runId": run.get('id')})
-        for horse, r in zip(run.get("horses"), result):
-            if r['final_position'] is None:
-                horse["position"] = "-"
-            else:
-                horse["position"] = r['final_position']
-        return run, 200
+        if run:
+            statement = text("""
+                            select rh.horse_id, rh.final_position 
+                            from runs_horses rh
+                            where rh.run_id == :runId
+                            order by rh.horse_id asc
+                        """)
+            result = db.session.execute(statement, {"runId": run.get('id')})
+            for horse, r in zip(run.get("horses"), result):
+                if r['final_position'] is None:
+                    horse["position"] = "-"
+                else:
+                    horse["position"] = r['final_position']
+            return run, 200
+
+        return "Run not found", 404
 
 
 @api_run_horse.route("/")
@@ -110,7 +113,12 @@ class Runs_HorsesListController(Resource):
     def put(self):
         """Update horses final position for a given run tag"""
         run = Run.query.filter(Run.tag == request.form.get("Run Tag")).first()
+        if not run: return "Run not found", 404
+
         horse = Horse.query.filter(Horse.equineID == request.form.get("Horse(equineID)")).first()
+        if not horse: return "Horse not found", 404
+        if horse not in run.horses: return "Horse " + horse.equineID + " is not participating in given run " + run.tag, 404
+
         run_horse = Runs_Horses.query.filter(Runs_Horses.run_id == run.id, Runs_Horses.horse_id == horse.id).first()
         run_horse.final_position = request.form.get("Position")
 

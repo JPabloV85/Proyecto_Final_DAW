@@ -3,7 +3,7 @@ from flask import request, jsonify
 from flask_restx import Resource, Namespace
 from sqlalchemy import text
 from config import apiKey_required
-from model import Bet, db, Runs_Horses, Client
+from model import Bet, db, Runs_Horses, Client, User
 from schema import BetSchema
 from views.clients import getClientIDFromToken
 
@@ -128,16 +128,20 @@ class BetListController(Resource):
                              'code for a succeded or failed operation.')
     def get(self, Username):
         """Shows a detailed list of bets from given Client username."""
-        statement = text("""
-                            select b.*
-                            from bet b
-                            join client c on c.id = b.client_id
-                            join user u on u.id = c.user_id
-                            where u.username = :userName
-                        """)
-        result = db.session.execute(statement, {"userName": Username}).all()
+        user = User.query.filter(User.username == Username).first()
+        if user:
+            statement = text("""
+                                select b.*
+                                from bet b
+                                join client c on c.id = b.client_id
+                                join user u on u.id = c.user_id
+                                where u.username = :userName
+                            """)
+            result = db.session.execute(statement, {"userName": Username}).all()
 
-        betsListData = []
-        for bet in result: betsListData.append(reformatBet(bet))
+            betsListData = []
+            for bet in result: betsListData.append(reformatBet(bet))
 
-        return betsListData, 200
+            return betsListData, 200
+
+        return "Client not found", 404
