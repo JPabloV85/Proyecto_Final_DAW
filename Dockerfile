@@ -1,12 +1,13 @@
 FROM python:3.9
-COPY ./requirements.txt /app/requirements.txt
+RUN pip3 install --upgrade pip
+
 WORKDIR /app
 
-RUN pip3 install --upgrade pip
+COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
-COPY . /app
+COPY . .
 
 EXPOSE 5000
-ENTRYPOINT [ "flask"]
-CMD [ "run", "--host", "0.0.0.0" ]
+ENTRYPOINT [ "flask" ]
+CMD [ "run", "--host=0.0.0.0" ]
