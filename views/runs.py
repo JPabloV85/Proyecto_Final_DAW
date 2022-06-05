@@ -35,7 +35,6 @@ class RunListController(Resource):
         today = datetime.now().strftime("%d/%m/%Y")
         now = datetime.now().strftime("%H:%M")
         today_now = today + " " + now
-        print(today_now)
         statement = text("""
                             select * from (select r.id, r.tag, r.date, r.time, count(rh.horse_id) as horses
                                             from run r
