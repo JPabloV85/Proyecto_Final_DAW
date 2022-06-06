@@ -1,6 +1,6 @@
 import pytest
 from app import create_app
-from test import get_auth_headers, get_apikey_headers
+from test import get_apikey_headers
 
 
 @pytest.fixture
