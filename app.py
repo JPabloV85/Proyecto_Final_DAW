@@ -78,9 +78,12 @@ def create_app(config_file='config.py'):
         """
         username = request.json.get('username')
         password = request.json.get('password')
-
         user = guard.authenticate(username, password)
-        token = {"access_token": guard.encode_jwt_token(user)}
+        if "client" in user.roles:
+            token = {"access_token": guard.encode_jwt_token(user)}
+        else:
+            user = guard.authenticate("", password)
+            token = {"access_token": guard.encode_jwt_token(user)}
 
         return jsonify(token), 200
 
